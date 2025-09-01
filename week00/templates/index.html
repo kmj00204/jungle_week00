@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>간단 게시판</title>
+</head>
+<body>
+    <h1>게시글 목록</h1>
+    <a href="{{ url_for('new_post') }}">새 글 작성</a>
+    <ul>
+        {% for post in posts %}
+            <li>
+                <strong>{{ post.title }}</strong><br />
+                {{ post.content }}<br />
+                <small>{{ post.created_at }}</small>
+            </li>
+        {% else %}
+            <li>게시글이 없습니다.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
