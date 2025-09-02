@@ -1,22 +1,156 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8" />
-    <title>간단 게시판</title>
+    <title>WithMe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
+
 <body>
-    <h1>게시글 목록</h1>
-    <a href="{{ url_for('new_post') }}">새 글 작성</a>
-    <ul>
-        {% for post in posts %}
-            <li>
-                <strong>{{ post.title }}</strong><br />
-                {{ post.content }}<br />
-                <small>{{ post.created_at }}</small>
-            </li>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <div class="mx-auto">
+                <a class="navbar-brand" href="/">WithMe</a>
+            </div>
+            <div class="d-flex">
+                <a class="btn btn-outline-light me-2" href="/post/new">새 글 작성</a>
+                <a class="btn btn-outline-light me-2" href="/mypage">마이페이지</a>
+                <a class="btn btn-outline-light" href="/logout">로그아웃</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="height: 300px; border: 1px solid black;">
+        </div>
+        <hr>
+        <form method="GET" action="/search" class="row g-3 align-items-end mb-4">
+            <div class="col-md-3" style="width:150px;">
+                <label for="category" class="form-label">카테고리</label>
+                <select class="form-select" name="category" id="category">
+                    {% for cat in ['전체', '배달', '택시', '기타','운동'] %}
+                    <option value="{{ cat }}" {% if selected_category==cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col">
+                <label for="search" class="form-label">검색어</label>
+                <input type="text" class="form-control" name="search" id="search" placeholder="검색어 입력"
+                    value="{{ search or '' }}">
+            </div>
+
+            <div class="col-md-3" style="width:150px;">
+                <label for="sort" class="form-label">정렬 방식</label>
+                <select class="form-select" name="sort" id="sort">
+                    <option value="newest" {% if sort=='newest' %}selected{% endif %}>최신순</option>
+                    <option value="closest" {% if sort=='closest' %}selected{% endif %}>마감일순</option>
+                    <option value="viewcount" {% if sort=='viewcount' %}selected{% endif %}>조회순</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-grid" style="width:150px;">
+                <button type="submit" class="btn btn-primary">검색</button>
+            </div>
+        </form>
+
+        {% if posts %}
+        <table class="table table-bordered" style="text-align: center;">
+            <tr>
+                <td>
+                    제목
+                </td>
+                <td>
+                    사진
+                </td>
+                <td>
+                    작성자
+                </td>
+                <td>
+                    조회수
+                </td>
+                <td>
+                    마감일
+                </td>
+                <td>
+                    모집현황
+                </td>
+                <td>
+                    상태
+                </td>
+                <td>
+                    카테고리
+                </td>
+            </tr>
+            {%for post in posts%}
+            <tr style="vertical-align: middle;">
+                <td style="text-align: left;">
+                    <a href="/post/{{post._id}}" class="text-decoration-none fw-bold text-dark">
+                        {{ post.title }}
+                    </a>
+                </td>
+                <td>
+                    <img src="{{ post.picture }}" alt="게시글 이미지" style="max-width: 150px; max-height: 100px;">
+                </td>
+                <td>
+                    {{post.author}}
+                </td>
+                <td>
+                    {{post.viewcount}}
+                </td>
+                <td>
+                    {{ post.deadline[:10] }} {{ post.deadline[11:] }}
+                </td>
+                <td>
+                    {{post.status}} / {{post.required}}
+                </td>
+                <td>
+                    {% if post.statu == 1 %}
+                    모집중
+                    {% else %}
+                    모집완료
+                    {% endif %}
+                </td>
+                <td>
+                    {{post.category}}
+                </td>
+            </tr>
+            {%endfor%}
+        </table>
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- 이전 버튼 -->
+                <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="?page={{ page - 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">이전</a>
+                </li>
+
+                <!-- 페이지 숫자 -->
+                {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link"
+                        href="?page={{ p }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">{{
+                        p }}</a>
+                </li>
+                {% endfor %}
+
+                <!-- 다음 버튼 -->
+                <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="?page={{ page + 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">다음</a>
+                </li>
+            </ul>
+        </nav>
+
         {% else %}
-            <li>게시글이 없습니다.</li>
-        {% endfor %}
-    </ul>
+        <div class="alert alert-secondary" role="alert">
+            현재 게시글이 없습니다.
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
