@@ -1,16 +1,52 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <title>새 게시글 작성</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>새 게시글 작성</h1>
-    <form action="{{ url_for('new_post') }}" method="post">
-        <label>제목: <input type="text" name="title" /></label><br />
-        <label>내용: <textarea name="content"></textarea></label><br />
-        <button type="submit">작성하기</button>
-    </form>
-    <a href="{{ url_for('index') }}">목록으로</a>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">새 게시글 작성</h1>
+        <!-- enctype="multipart/form-data" 필수! -->
+        <form action="{{ url_for('new_post') }}" method="post" enctype="multipart/form-data"
+            class="border p-4 bg-white rounded shadow-sm">
+            <div class="mb-3">
+                <label for="title" class="form-label">제목</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="deadline" class="form-label">마감일</label>
+                <!-- 날짜+시간 선택 가능 -->
+                <input type="datetime-local" id="deadline" name="deadline" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="picture" class="form-label">사진 업로드</label>
+                <input type="file" id="picture" name="picture" class="form-control" accept="image/*" required>
+            </div>
+            <div class="mb-3">
+                <label for="required" class="form-label">모집인원</label>
+                <input type="number" id="required" name="required" class="form-control" min="1" required>
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">카테고리</label>
+                <select id="category" name="category" class="form-select" required>
+                    <option value="">선택하세요</option>
+                    <option value="운동">운동</option>
+                    <option value="배달">배달</option>
+                    <option value="택시">택시</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">← 목록으로</a>
+                <button type="submit" class="btn btn-primary">작성하기</button>
+            </div>
+        </form>
+    </div>
 </body>
+
 </html>
