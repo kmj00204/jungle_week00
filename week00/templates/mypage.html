@@ -49,6 +49,42 @@
             function goMain(){
                 location.href = '/';
             }
+
+            (() => {
+            const root = document.getElementById('apply-wrap'); // 목록+페이징 래퍼 하나
+            if (!root) return;
+
+            root.addEventListener('click', async (e) => {
+                const a = e.target.closest('a.page-link');       // 이전/숫자/다음
+                if (!a) return;
+                if (a.closest('.page-item')?.classList.contains('disabled')) return;
+
+                e.preventDefault();                              // ← 기본 이동 막기
+                const res = await fetch(a.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+                if (!res.ok) return (location.href = a.href);    // 폴백
+                const html = await res.text();
+                root.outerHTML = html;                           // 부분(html 조각)만 교체
+                history.pushState(null, '', a.href);             // 주소 갱신
+            });
+
+            // 뒤/앞으로 대응
+            window.addEventListener('popstate', async () => {
+                const res = await fetch(location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+                const html = await res.text();
+
+                // 1. 요소를 변수에 할당합니다.
+                const applyWrapElement = document.getElementById('apply-wrap');
+                
+                // 2. 요소가 존재하는지 확인합니다.
+                if (applyWrapElement) {
+                    // 3. 존재할 경우에만 outerHTML에 할당합니다.
+                    applyWrapElement.outerHTML = html;
+                }
+
+                // document.getElementById('apply-wrap')?.outerHTML = html;
+            });
+            })();
+            
     </script>
 
 </head>
@@ -69,6 +105,8 @@
 
     <div class="container">
         <h2> ※ 나의 작성글</h2>
+
+    <div id="apply-wrap">
         {% if myPosts %}
         <table class="table table-bordered" style="text-align: center;">
             <tr>
@@ -97,82 +135,7 @@
                     카테고리
                 </td>
             </tr>
-            {%for post in myPosts %}
-            <tr style="vertical-align: middle;">
-                <td style="text-align: left;">
-                    <a href="/post/{{post._id}}" class="text-decoration-none fw-bold text-dark">
-                        {{ post.title }}
-                    </a>
-                </td>
-                <td>
-                    <img src="{{ post.picture }}" alt="게시글 이미지" style="max-width: 150px; max-height: 100px;">
-                </td>
-                <td>
-                    {{post.author}}
-                </td>
-                <td>
-                    {{post.viewcount}}
-                </td>
-                <td>
-                    {{ post.closing_date[:10] }} {{ post.closing_date[11:] }}
-                </td>
-                <td>
-                    {{post.status}} / {{post.required}}
-                </td>
-                <td>
-                    {% if post.statu == 1 %}
-                    모집중
-                    {% else %}
-                    모집완료
-                    {% endif %}
-                </td>
-                <td>
-                    {{post.category}}
-                </td>
-            </tr>
-            {%endfor%}
-        </table>
-        {% else %}
-        <div class="alert alert-secondary" role="alert">
-            현재 게시글이 없습니다.
-        </div>
-        {% endif %}
-    </div>
-
-
-        <br>
-
-    <div class="container">
-        <h2> ※ 나의 참여글</h2>
-        {% if applyPosts %}
-        <table class="table table-bordered" style="text-align: center;">
-            <tr>
-                <td>
-                    제목
-                </td>
-                <td>
-                    사진
-                </td>
-                <td>
-                    작성자
-                </td>
-                <td>
-                    조회수
-                </td>
-                <td>
-                    마감일
-                </td>
-                <td>
-                    모집현황
-                </td>
-                <td>
-                    상태
-                </td>
-                <td>
-                    카테고리
-                </td>
-            </tr>
-            {%for post in applyPosts %}
+            {%for post in myPosts[0:per_page] %}
             <tr style="vertical-align: middle;">
                 <td style="text-align: left;">
                     <a href="/post/{{post._id}}" class="text-decoration-none fw-bold text-dark">
@@ -211,24 +174,127 @@
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
                 <!-- 이전 버튼 -->
-                <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                <li class="page-item {% if page_myPosts <= 1 %}disabled{% endif %}">
                     <a class="page-link"
-                        href="?page={{ page - 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">이전</a>
+                        href="?page_myPosts={{ page_myPosts - 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">이전</a>
                 </li>
 
                 <!-- 페이지 숫자 -->
-                {% for p in range(1, total_pages + 1) %}
-                <li class="page-item {% if p == page %}active{% endif %}">
+                {% for p in range(1, total_pages_myPosts + 1) %}
+                <li class="page-item {% if p == page_myPosts %}active{% endif %}">
                     <a class="page-link"
-                        href="?page={{ p }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">{{
+                        href="?page_myPosts={{ p }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">{{
                         p }}</a>
                 </li>
                 {% endfor %}
 
                 <!-- 다음 버튼 -->
-                <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                <li class="page-item {% if page_myPosts >= total_pages_myPosts %}disabled{% endif %}">
                     <a class="page-link"
-                        href="?page={{ page + 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">다음</a>
+                        href="?page_myPosts={{ page_myPosts + 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">다음</a>
+                </li>
+            </ul>
+        </nav>
+
+
+        {% else %}
+        <div class="alert alert-secondary" role="alert">
+            현재 게시글이 없습니다.
+        </div>
+        {% endif %}
+        </div>
+    </div>
+
+
+        <br>
+
+    <div class="container">
+        <h2> ※ 나의 참여글</h2>
+        {% if applyPosts %}
+        <table class="table table-bordered" style="text-align: center;">
+            <tr>
+                <td>
+                    제목
+                </td>
+                <td>
+                    사진
+                </td>
+                <td>
+                    작성자
+                </td>
+                <td>
+                    조회수
+                </td>
+                <td>
+                    마감일
+                </td>
+                <td>
+                    모집현황
+                </td>
+                <td>
+                    상태
+                </td>
+                <td>
+                    카테고리
+                </td>
+            </tr>
+            {%for post in applyPosts[0:per_page] %}
+            <tr style="vertical-align: middle;">
+                <td style="text-align: left;">
+                    <a href="/post/{{post._id}}" class="text-decoration-none fw-bold text-dark">
+                        {{ post.title }}
+                    </a>
+                </td>
+                <td>
+                    <img src="{{ post.picture }}" alt="게시글 이미지" style="max-width: 150px; max-height: 100px;">
+                </td>
+                <td>
+                    {{post.author}}
+                </td>
+                <td>
+                    {{post.viewcount}}
+                </td>
+                <td>
+                    {{ post.closing_date[:10] }} {{ post.closing_date[11:] }}
+                </td>
+                <td>
+                    {{post.status}} / {{post.required}}
+                </td>
+                <td>
+                    {% if post.statu == 1 %}
+                    모집중
+                    {% else %}
+                    모집완료
+                    {% endif %}
+                </td>
+                <td>
+                    {{post.category}}
+                </td>
+            </tr>
+            {%endfor%}
+        </table>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- 이전 버튼 -->
+                <li class="page-item {% if page_applyPosts <= 1 %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="?page_applyPosts={{ page_applyPosts - 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">이전</a>
+                </li>
+
+                <!-- 페이지 숫자 -->
+                {% for p in range(1, total_pages_applyPosts + 1) %}
+                <li class="page-item {% if p == page_applyPosts %}active{% endif %}">
+                    <a class="page-link"
+                        href="?page_applyPosts={{ p }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">{{
+                        p }}</a>
+                </li>
+                {% endfor %}
+
+                <!-- 다음 버튼 -->
+                <li class="page-item {% if page_applyPosts >= total_pages_applyPosts %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="?page_applyPosts={{ page_applyPosts + 1 }}{% for key, value in query_params.items() %}&{{ key }}={{ value }}{% endfor %}">다음</a>
                 </li>
             </ul>
         </nav>
