@@ -63,166 +63,125 @@
                 box-shadow: var(--shadow);
             }
 
-            /* 메인 2열 레이아웃 */
-            .main-grid{
-                display: grid;
-                grid-template-columns: 2fr 1fr;
-                gap: 20px;
-            }
-
-            /* 좌측 : 그림 영역 */
-            .card {
-                background: #fff;
-                border: 1px solid var(--border);
-                border-radius: var(--radius-sm);
-                box-shadow: var(--shadow);
-            }
-            .preview-card{padding:16px}
-
-            .preview-box{
-            border:2px dashed #d1d5db;
-            border-radius:12px;
-            height:380px; /* 필요 시 조정 */
-            background:repeating-linear-gradient(
-                        45deg, #fafafa, #fafafa 10px, #f5f7fb 10px, #f5f7fb 20px);
-            display:flex;align-items:center;justify-content:center;
-            color:#9ca3af;font-weight:700;letter-spacing:.05em;
-            user-select:none;
-            }
-
-            /* 우측: 파일 목록 */
-            .list-card{padding:16px; display:flex; flex-direction:column; min-height:380px}
-
-            .section-title{
-            margin:0 0 12px;
-            font-size:15px;
-            font-weight:700;
-            }
-
-            .file-list{
-            list-style:none;margin:0;padding:0;
-            border:1px solid var(--border);
-            border-radius:10px;
-            overflow:hidden;
-            background:#fff;
-            max-height:260px;
-            overflow-y:auto;
-            }
-            .file-item{
-            display:flex;align-items:center;gap:10px;
-            padding:10px 12px;border-bottom:1px solid var(--border);
-            font-size:14px;color:#1f2937;
-            }
-            .file-item:last-child{border-bottom:none}
-            .file-item input[type="checkbox"]{width:16px;height:16px}
-
-            .list-actions{
-            display:flex;gap:10px;margin-top:12px;
-            }
-
             .page-scope .btn{
-            appearance:none;border:1px solid var(--border);background:#fff;
-            color:#111827;padding:9px 12px;border-radius:10px;
-            cursor:pointer;font-weight:600;
-            transition:box-shadow .15s ease, transform .06s ease, border-color .15s ease;
+                appearance:none;border:1px solid var(--border);background:#fff;
+                color:#111827;padding:9px 12px;border-radius:10px;
+                cursor:pointer;font-weight:600;
+                transition:box-shadow .15s ease, transform .06s ease, border-color .15s ease;
             }
-            .page-scope .btn:hover{border-color:#cbd5e1; box-shadow:var(--ring)}
-            .page-scope .btn:active{transform:translateY(1px)}
+            .page-scope .btn:hover{
+                border-color:#cbd5e1; 
+                box-shadow:var(--ring)}
+            .page-scope .btn:active{
+                transform:translateY(1px)
+            }
 
             .page-scope .btn-primary{
-            background:var(--primary);
-            border-color:transparent;
-            color:#fff;
+                background:var(--primary);
+                border-color:transparent;
+                color:#fff;
             }
-            .page-scope .btn-primary:hover{box-shadow:var(--ring); background:var(--primary-600)}
-
-            .btn-danger{
-            background:#fff;
-            color:var(--danger);
-            border-color:#ffd2d2;
+            .page-scope .btn-primary:hover{
+                box-shadow:var(--ring); 
+                background:var(--primary-600)
             }
-            .btn-danger:hover{border-color:#ffb4b4; box-shadow:0 0 0 4px rgba(239,68,68,.12)}
-            .btn-danger:active{background:#fff5f5}
 
             /* -------------------------------------------------
-            폼 영역
+                폼 영역
             ------------------------------------------------- */
             .form{
-            margin-top:20px;
-            padding:16px;
-            background:#fff;
-            border:1px solid var(--border);
-            border-radius:var(--radius-sm);
-            box-shadow:var(--shadow);
+                margin-top:20px;
+                padding:16px;
+                background:#fff;
+                border:1px solid var(--border);
+                border-radius:var(--radius-sm);
+                box-shadow:var(--shadow);
             }
 
             .form-grid{
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:14px 20px;
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:14px 20px;
             }
 
-            .field{display:flex; /*flex-direction:column;*/ gap:8px}
+            .field{
+                display:flex; 
+                gap:8px}
 
             .label{
-            width: 15%;
-            font-size:13px; color:var(--muted); font-weight:700;
-            display: flex;
-            flex-direction:column;
-            justify-content: center;
+                width: 15%;
+                font-size:13px; color:var(--muted); font-weight:700;
+                display: flex;
+                flex-direction:column;
+                justify-content: center;
             }
 
             .input, .select, .date, .readonly{
-            width:60%;
-            padding:11px 12px;
-            border:1px solid var(--border);
-            border-radius:10px;
-            background:#fff;
-            color:#111827;
-            outline:none;
-            transition:border-color .15s ease, box-shadow .15s ease;
+                width:60%;
+                padding:11px 12px;
+                border:1px solid var(--border);
+                border-radius:10px;
+                background:#fff;
+                color:#111827;
+                outline:none;
+                transition:border-color .15s ease, box-shadow .15s ease;
             }
             .input:focus, .select:focus, .date:focus{
-            border-color:#c4d3ff; box-shadow:var(--ring);
+                border-color:#c4d3ff; 
+                box-shadow:var(--ring);
             }
             .readonly{
-            background:#fafafa; color:#6b7280;
+                background:#fafafa; color:#6b7280;
             }
 
             /* 텍스트 영역 */
             .editor{
-            margin-top:16px;
-            display:flex; flex-direction:column; gap:8px;
+                margin-top:16px;
+                display:flex; flex-direction:column; gap:8px;
             }
             .textarea{
-            width:100%;
-            min-height:260px;
-            resize:vertical;
-            padding:12px 14px;
-            border:1px solid var(--border);
-            border-radius:12px;
-            background:#fff;
-            outline:none;
-            transition:border-color .15s ease, box-shadow .15s ease;
+                width:100%;
+                min-height:260px;
+                resize:vertical;
+                padding:12px 14px;
+                border:1px solid var(--border);
+                border-radius:12px;
+                background:#fff;
+                outline:none;
+                transition:border-color .15s ease, box-shadow .15s ease;
             }
-            .textarea::placeholder{color:#9da3ae}
-            .textarea:focus{border-color:#c4d3ff; box-shadow:var(--ring)}
+            .textarea::placeholder{
+                color:#9da3ae
+            }
+            .textarea:focus{
+                border-color:#c4d3ff; box-shadow:var(--ring)
+            }
 
             /* 하단 버튼 */
             .form-actions{
-            margin-top:16px;
-            display:flex; justify-content:flex-end; gap:10px;
+                margin-top:16px;
+                display:flex; justify-content:flex-end; gap:10px;
             }
 
             .btn-ghost{
-            background:#fff; border:1px solid var(--border); color:#111827;
+                background:#fff; 
+                border:1px solid var(--border); 
+                color:#111827;
             }
-            .btn-ghost:hover{border-color:#cbd5e1; box-shadow:var(--ring)}
+            .btn-ghost:hover{
+                border-color:#cbd5e1; 
+                box-shadow:var(--ring)
+            }
 
             .btn-solid{
-            background:var(--accent); color:#fff; border:1px solid transparent;
+                background:var(--accent); 
+                color:#fff; 
+                border:1px solid transparent;
             }
-            .btn-solid:hover{background:#5558e6; box-shadow:var(--ring)}
+            .btn-solid:hover{
+                background:#5558e6; 
+                box-shadow:var(--ring)
+            }
 
             /* 이미지에 도형그리기 */
             #wrap { position: relative; display: inline-block; }
@@ -236,25 +195,31 @@
 
             /* 오버레이를 CSS로 이미지 위에 '가득' 덮기: inset:0로 JS 사이즈 의존 제거 */
             #overlay {
-            position: absolute; inset: 0;
-            z-index: 5; pointer-events: auto; cursor: default;
+                position: absolute; inset: 0;
+                z-index: 5; pointer-events: auto; cursor: default;
             }
+            .stage { position: relative; display:inline-block; }
+            .base-img { display:block; max-width:100%; height:auto; }
+
             .rect {
-            position: absolute;
-            border: 2px solid rgb(170, 0, 113);
-            background: rgba(196, 9, 140, 0.705);
-            box-sizing: border-box;
+                position: absolute;
+                border: 2px solid rgb(170, 0, 113);
+                background: rgba(196, 9, 140, 0.705);
+                box-sizing: border-box;
             }
             .rect.selected { border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.35); }
             .toolbar { margin:10px 0; display:flex; gap:8px; justify-content: flex-end; flex-direction: column;}
             .toolbar button { padding:6px 10px; }
 
+            .btnList {
+                display: none !important;
+            }
             /* 유효성 검사 css */
             .is-invalid {
                 border-color: #ef4444 !important;
                 box-shadow: 0 0 0 3px rgba(239,68,68,.15) !important;
             }
-                .invalid-msg {
+            .invalid-msg {
                 margin-top: 6px;
                 font-size: 12px;
                 color: #ef4444;
@@ -263,9 +228,181 @@
         </style>
 
         <script>
+            $(document).ready(function(){
+                let msg = "{{ msg }}";
+                console.log("msg : " + msg);
+                if(msg != 'None' && msg != 'undefiened' != msg != null){
+                    alert(msg);
+                }
+            });
+
+            var rects = [];
+            var autoId = 0;
+            // 이미지에 도형 그리기
+            $(function () {
+                const el = document.getElementById('overlay');
+                if (!el) { console.error('#overlay not found'); return; }
+
+                // data-shapes 파싱
+                const raw = el.getAttribute('data-shapes') || '[]';
+                let SAVED_SHAPES = [];
+                try { SAVED_SHAPES = raw.trim() ? JSON.parse(raw) : []; } catch { /* ignore */ }
+
+                const $img = $('#mapImg');
+                if ($img.length === 0) {                 // ← 여기서 안전 체크
+                console.error('#mapImg not found');
+                return;
+                }
+
+                // 이미지가 이미 캐시 로드됐으면 바로, 아니면 load 후에
+                if ($img.prop('complete') && $img[0].naturalWidth) {
+                drawNow();
+                } else {
+                $img.one('load', drawNow);
+                }
+                $(window).on('resize', drawNow);
+
+                function drawNow() {
+                    const overlay = document.getElementById('overlay');
+                    if (!overlay) return;
+
+                    const W = overlay.clientWidth;
+                    const H = overlay.clientHeight;
+                    if (!W || !H) return;  // 크기 0이면 그려도 안 보임
+
+                    overlay.innerHTML = '';
+                    SAVED_SHAPES.forEach(s => {
+                        const div = document.createElement('div');
+                        div.className = 'rect';
+                        div.style.position = 'absolute';
+                        div.style.boxSizing = 'border-box';
+                        div.style.border = '2px solid rgb(170, 0, 113)';
+                        div.style.background = 'rgba(196, 9, 140, 0.705)';
+                        div.style.left   = (s.x * W) + 'px';
+                        div.style.top    = (s.y * H) + 'px';
+                        div.style.width  = (s.w * W) + 'px';
+                        div.style.height = (s.h * H) + 'px';
+                        overlay.appendChild(div);
+                        $('.rect').data('id', (++autoId).toString());
+                    });
+                }
+
+
+                // 수정 권한 있을 경우
+                if("{{isMyPost}}"){
+                    $('.btnList').show();
+
+                    const $overlay = $('#overlay');
+                    let mode = 'idle';              // 'idle' | 'draw' | 'select'
+                    let drawing = false, start = {x:0, y:0};
+                    let $current = null,  selectedId = null
+                    
+
+                    function setMode(next) {
+                        mode = next;
+                        if (mode === 'draw') {
+                        $('#btnDraw').text('그리기 종료 (Esc)');
+                        $overlay.css('cursor','crosshair');
+                        } else {
+                        $('#btnDraw').text('영역(사각형) 표시');
+                        $overlay.css('cursor','default');
+                        cancelCurrentDrawing();
+                        }
+                        clearSelection();
+                    }
+                    $('#btnDraw').on('click', ()=> setMode(mode==='draw'?'idle':'draw'));
+
+                    // overlay 기준 상대좌표(스크롤 안전)
+                    function relPos(e){
+                        const off = $overlay.offset();
+                        return { x: e.pageX - off.left, y: e.pageY - off.top };
+                    }
+
+                    // 드로잉
+                    $overlay.on('mousedown', function(e){
+                        console.log("mouse down");
+                        if (mode !== 'draw') return;
+                        drawing = true;
+                        start = relPos(e);
+                        $current = $('<div class="rect"></div>').css({
+                        left:start.x, top:start.y, width:0, height:0
+                        }).appendTo($overlay);
+                        $current.data('id', (++autoId).toString());
+                    });
+
+                    $(document).on('mousemove', function(e){
+                        if (!drawing || !$current) return;
+                        const p = relPos(e);
+                        const x = Math.min(p.x, start.x);
+                        const y = Math.min(p.y, start.y);
+                        const w = Math.abs(p.x - start.x);
+                        const h = Math.abs(p.y - start.y);
+                        $current.css({ left:x, top:y, width:w, height:h });
+                    });
+
+                    $(document).on('mouseup', function(){
+                        console.log("mouse up");
+                        if (!drawing || !$current) return;
+                        drawing = false;
+
+                        const x = parseFloat($current.css('left'));
+                        const y = parseFloat($current.css('top'));
+                        const w = parseFloat($current.css('width'));
+                        const h = parseFloat($current.css('height'));
+                        if (w < 3 || h < 3) { $current.remove(); $current = null; return; }
+
+                        rects.push({ id:$current.data('id'), x, y, w, h });
+                        $current = null;
+                    });
+
+                    // 선택/해제
+                    $overlay.on('click', '.rect', function(e){
+                        console.log("rect Clicked!! 선택 ");
+                        if (mode === 'draw') return;
+                        e.stopPropagation();
+                        const $r = $(this), id = $r.data('id');
+                        console.log("id : " + id);
+
+                        if (selectedId === id) { clearSelection(); return; }
+                        clearSelection(); selectedId = id; $r.addClass('selected'); mode='select';
+                    });
+                    $overlay.on('click', function(e){
+                        console.log("rect Clicked!! 해제");
+                        if ($(e.target).hasClass('rect')) return;
+                        clearSelection(); if (mode==='select') mode='idle';
+                    });
+                    function clearSelection(){ selectedId=null; $overlay.find('.rect').removeClass('selected'); }
+                    function cancelCurrentDrawing(){ drawing=false; if($current){$current.remove(); $current=null;} }
+
+                    // 삭제/초기화
+                    $('#btnDelete').on('click', function(){
+                        if (!selectedId) return;
+                        $overlay.find(`.rect`).each(function(){ 
+                            console.log("this.id : " + $(this).data('id'));
+                            console.log("selected id : " + selectedId);
+                            if($(this).data('id')===selectedId) $(this).remove(); });
+                        rects = rects.filter(r=>r.id!==selectedId); clearSelection(); mode='idle';
+                    });
+                    $('#btnClear').on('click', function(){
+                        rects=[]; $overlay.find('.rect').remove(); clearSelection(); cancelCurrentDrawing(); setMode('idle');
+                    });
+
+                }
+
+            });
+
             // 카테고리 selectBox 선택시 화면 유형 전환        
             $(function(){
                 $(".category").hide();  // 카테고리별 화면 숨기고 시작
+
+                category = $("#categorySelect").val();
+                if(category == '시설이용'){
+                    $("#1").show();
+
+                    if($("#facility").val() == '교육장' || $("#facility").val() == '회의실'){
+                        $("#facilityDetail").show();
+                    }
+                }
 
                 // 내 모집글일 경우 바로 수정가능
                 if("{{isMyPost}}" != 'False' && ("{{post.statu}}" == '1')){
@@ -276,7 +413,9 @@
                 $("#categorySelect").on("change", function(){
                     const selectValue = $(this).val();
                     $(".category").hide();
-                    $("#" + selectValue).show();
+                    if(selectValue == '시설이용'){
+                        $("#1").show();
+                    }
                 });
                 
                 $('#facility').on("change", function(){
@@ -288,119 +427,14 @@
                     }
                 })
                 
-                
-                
-                /* 시설이용 - 이미지에 도형 그리기 */
-                const $overlay = $('#overlay');
-                let mode = 'idle';              // 'idle' | 'draw' | 'select'
-                let drawing = false, start = {x:0, y:0};
-                let $current = null, rects = [], selectedId = null, autoId = 0;
-
-                function setMode(next) {
-                    mode = next;
-                    if (mode === 'draw') {
-                    $('#btnDraw').text('그리기 종료 (Esc)');
-                    $overlay.css('cursor','crosshair');
-                    } else {
-                    $('#btnDraw').text('영역(사각형) 표시');
-                    $overlay.css('cursor','default');
-                    cancelCurrentDrawing();
-                    }
-                    clearSelection();
-                }
-                $('#btnDraw').on('click', ()=> setMode(mode==='draw'?'idle':'draw'));
-
-                // overlay 기준 상대좌표(스크롤 안전)
-                function relPos(e){
-                    const off = $overlay.offset();
-                    return { x: e.pageX - off.left, y: e.pageY - off.top };
-                }
-
-                // 드로잉
-                $overlay.on('mousedown', function(e){
-                    if (mode !== 'draw') return;
-                    drawing = true;
-                    start = relPos(e);
-                    $current = $('<div class="rect"></div>').css({
-                    left:start.x, top:start.y, width:0, height:0
-                    }).appendTo($overlay);
-                    $current.data('id', (++autoId).toString());
-                });
-
-                $(document).on('mousemove', function(e){
-                    if (!drawing || !$current) return;
-                    const p = relPos(e);
-                    const x = Math.min(p.x, start.x);
-                    const y = Math.min(p.y, start.y);
-                    const w = Math.abs(p.x - start.x);
-                    const h = Math.abs(p.y - start.y);
-                    $current.css({ left:x, top:y, width:w, height:h });
-                });
-
-                $(document).on('mouseup', function(){
-                    if (!drawing || !$current) return;
-                    drawing = false;
-
-                    const x = parseFloat($current.css('left'));
-                    const y = parseFloat($current.css('top'));
-                    const w = parseFloat($current.css('width'));
-                    const h = parseFloat($current.css('height'));
-                    if (w < 3 || h < 3) { $current.remove(); $current = null; return; }
-
-                    rects.push({ id:$current.data('id'), x, y, w, h });
-                    $current = null;
-                });
-
-                // 선택/해제
-                $overlay.on('click', '.rect', function(e){
-                    if (mode === 'draw') return;
-                    e.stopPropagation();
-                    const $r = $(this), id = $r.data('id');
-                    if (selectedId === id) { clearSelection(); return; }
-                    clearSelection(); selectedId = id; $r.addClass('selected'); mode='select';
-                });
-                $overlay.on('click', function(e){
-                    if ($(e.target).hasClass('rect')) return;
-                    clearSelection(); if (mode==='select') mode='idle';
-                });
-                function clearSelection(){ selectedId=null; $overlay.find('.rect').removeClass('selected'); }
-                function cancelCurrentDrawing(){ drawing=false; if($current){$current.remove(); $current=null;} }
-
-                // 삭제/초기화/저장
-                $('#btnDelete').on('click', function(){
-                    if (!selectedId) return;
-                    $overlay.find(`.rect`).each(function(){ if($(this).data('id')===selectedId) $(this).remove(); });
-                    rects = rects.filter(r=>r.id!==selectedId); clearSelection(); mode='idle';
-                });
-                $('#btnClear').on('click', function(){
-                    rects=[]; $overlay.find('.rect').remove(); clearSelection(); cancelCurrentDrawing(); setMode('idle');
-                });
-                $('#btnSave').on('click', async function(){
-                    const W = $overlay.width(), H = $overlay.height();
-                    const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
-                    const res = await fetch('/zones', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ imageId:'krafton_campus_v1', type:'rect', shapes:normalized })
-                    }).catch(()=>null);
-                    alert(res ? '저장 시도(응답 확인 필요)' : '요청 실패');
-                });
-
-                // 단축키
-                $(window).on('keydown', function(e){
-                    const k = e.key.toLowerCase();
-                    if (k==='escape'){ if(drawing){cancelCurrentDrawing();return;} if(selectedId){clearSelection();return;} setMode('idle'); }
-                    if (k==='delete' || k==='backspace'){ $('#btnDelete').click(); }
-                    if (k==='d'){ $('#btnDraw').click(); }
-                });
             });
-
-                        function showError($el, msg){
+            function showError($el, msg){
                 $el.addClass('is-invalid');
                 const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
                 if($wrap.find('.invalid-msg').length===0){
-                $('<div class="invalid-msg"></div>').text(msg).appendTo($wrap);
+                    $('<div class="invalid-msg"></div>').text(msg).appendTo($wrap);
                 }else{
-                $wrap.find('.invalid-msg').text(msg);
+                    $wrap.find('.invalid-msg').text(msg);
                 }
             }
             function clearError($el){
@@ -504,9 +538,13 @@
             }
 
             function doClose(){
-                const form = document.getElementById("info");
-                form.action = '/post/close/{{post._id}}'
-                form.submit();
+                const result = confirm('마감처리 하시면 취소할 수 없습니다. 마감하시겠습니까?');
+
+                if(result){
+                    const form = document.getElementById("info");
+                    form.action = '/post/close/{{post._id}}'
+                    form.submit();
+                }
             }
 
             function doUpdate(){
@@ -532,8 +570,19 @@
                     hidden.name = "facility";
                     hidden.value = facility;
                     form.appendChild(hidden);
-                    if(facility == '7' || facility == '8'){
 
+                    // 이미지 도형 좌표값
+                    const rect = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "rect";
+
+                    const $overlay = $('#overlay');
+                    const W = $overlay.width(), H = $overlay.height();
+                    const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
+                    hidden.value = JSON.stringify(normalized);
+                    form.appendChild(rect);
+
+                    if(facility == '교육장' || facility == '회의실'){
                         const hidden = document.createElement("input");
                         hidden.type = "hidden";
                         hidden.name = "facilityDetail";
@@ -624,29 +673,28 @@
                 <div class="container">
                     <div id="wrap" style="position:relative; display:inline-block; max-width: 50%;">
                         <img id="mapImg" src="{{ url_for('static', filename='campus_map.png') }}" draggable="false" style="display: block; user-select: none;" alt="campus map">
-                        <div id="overlay" style="position:absolute; left:0; top:0; z-index: 5; pointer-events:auto;"></div>
+                        <div id="overlay" style="position:absolute; left:0; top:0; z-index: 5; pointer-events:auto;" data-shapes='{{ shapes_json | e }}'></div>
                     </div>
 
                 <!-- 우측: 버튼목록 -->
-                    <div class="toolbar">
+                    <div class="toolbar btnList">
                         <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
                         <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
                         <button id="btnClear" class="btn btn-primary">전체 삭제</button>
-                        <!-- <button id="btnSave" class="btn btn-primary">저장</button> -->
                     </div>
                     <div class="toolbar">
-                         <select class="select" id="facility" style="width: 100%;">
+                         <select class="select" id="facility" style="width: 100%;" disabled>
                             <option value="0">시설물 선택</option>
-                            <option value="1">정글스테이지</option>
-                            <option value="2">카페테리아</option>
-                            <option value="3">편의점</option>
-                            <option value="4">택배보관소</option>
-                            <option value="5">헬스장</option>
-                            <option value="6">세탁실</option>
-                            <option value="7">교육장</option>
-                            <option value="8">회의실</option>
+                            <option {{ 'selected' if post.facility == '정글스테이지'   else '' }}>정글스테이지</option>
+                            <option {{ 'selected' if post.facility == '카페테리아'   else '' }}>카페테리아</option>
+                            <option {{ 'selected' if post.facility == '편의점'   else '' }}>편의점</option>
+                            <option {{ 'selected' if post.facility == '택배보관소'   else '' }}>택배보관소</option>
+                            <option {{ 'selected' if post.facility == '헬스장'   else '' }}>헬스장</option>
+                            <option {{ 'selected' if post.facility == '세탁실'   else '' }}>세탁실</option>
+                            <option {{ 'selected' if post.facility == '교육장'   else '' }}>교육장</option>
+                            <option {{ 'selected' if post.facility == '회의실'   else '' }}>회의실</option>
                         </select>
-                        <input id="facilityDetail" class="input" type="text" placeholder="상세정보" style="width: 100%; display: none;">
+                        <input id="facilityDetail" class="input" type="text" placeholder="상세정보" style="width: 100%; display: none;" value="{{post.facilityDetail}}">
                     </div>
                 </div>
 
