@@ -1,834 +1,1126 @@
 <!Doctype html>
 <html lang="ko">
 
-    <head>
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
 
-		<!-- JS -->
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-            crossorigin="anonymous"></script>
+    <!-- 구글폰트 -->
+    <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        <!-- 구글폰트 -->
-        <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
 
+    <title>모집글 상세</title>
 
-        <title>모집글 상세</title>
+    <!-- style -->
+    <style type="text/css">
+        .leaflet-routing-container {
+            display: none;
+        }
 
-        <!-- style -->
-        <style type="text/css">
-            :root{
-                --bg:#f6f7fb;
-                --panel:#ffffff;
-                --border:#e6e8ee;
-                --text:#111827;
-                --muted:#6b7280;
-                --primary:#3b82f6;
-                --primary-600:#2563eb;
-                --danger:#ef4444;
-                --danger-600:#dc2626;
-                --accent:#6366f1;
-                --shadow:0 6px 24px rgba(20,26,38,0.06);
-                --radius:14px;
-                --radius-sm:10px;
-                --ring:0 0 0 4px rgba(59,130,246,0.14);
-            }
+        :root {
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --border: #e6e8ee;
+            --text: #111827;
+            --muted: #6b7280;
+            --primary: #3b82f6;
+            --primary-600: #2563eb;
+            --danger: #ef4444;
+            --danger-600: #dc2626;
+            --accent: #6366f1;
+            --shadow: 0 6px 24px rgba(20, 26, 38, 0.06);
+            --radius: 14px;
+            --radius-sm: 10px;
+            --ring: 0 0 0 4px rgba(59, 130, 246, 0.14);
+        }
 
-            * {
-                /* font-family: "Stylish", sans-serif; */
-                /* margin: 0 1rem 0 1rem; */
-                box-sizing: border-box;
-            }
-            body {
-                margin: 0;
-                background: var(--bg);
-                color: var(--text);
-                font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Pretendard, Apple SD Gothic Neo, Arial, sans-serif;
-            }
+        * {
+            /* font-family: "Stylish", sans-serif; */
+            /* margin: 0 1rem 0 1rem; */
+            box-sizing: border-box;
+        }
 
-            /* 컨테이너 */
-            .app {
-                max-width: 1160px;
-                margin: 40px auto;
-                padding: 24px;
-                background: var(--panel);
-                border: 1px solid var(--border);
-                border-radius: var(--radius);
-                box-shadow: var(--shadow);
-            }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Pretendard, Apple SD Gothic Neo, Arial, sans-serif;
+        }
 
-            .page-scope .btn{
-                appearance:none;border:1px solid var(--border);background:#fff;
-                color:#111827;padding:9px 12px;border-radius:10px;
-                cursor:pointer;font-weight:600;
-                transition:box-shadow .15s ease, transform .06s ease, border-color .15s ease;
-            }
-            .page-scope .btn:hover{
-                border-color:#cbd5e1; 
-                box-shadow:var(--ring)}
-            .page-scope .btn:active{
-                transform:translateY(1px)
-            }
+        /* 컨테이너 */
+        .app {
+            max-width: 1160px;
+            margin: 40px auto;
+            padding: 24px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
 
-            .page-scope .btn-primary{
-                background:var(--primary);
-                border-color:transparent;
-                color:#fff;
-            }
-            .page-scope .btn-primary:hover{
-                box-shadow:var(--ring); 
-                background:var(--primary-600)
-            }
+        .page-scope .btn {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: #111827;
+            padding: 9px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: box-shadow .15s ease, transform .06s ease, border-color .15s ease;
+        }
 
-            /* -------------------------------------------------
-                폼 영역
+        .page-scope .btn:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--ring)
+        }
+
+        .page-scope .btn:active {
+            transform: translateY(1px)
+        }
+
+        .page-scope .btn-primary {
+            background: var(--primary);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        .page-scope .btn-primary:hover {
+            box-shadow: var(--ring);
+            background: var(--primary-600)
+        }
+
+        .btn-danger {
+            background: #fff;
+            color: var(--danger);
+            border-color: #ffd2d2;
+        }
+
+        .btn-danger:hover {
+            border-color: #ffb4b4;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, .12)
+        }
+
+        .btn-danger:active {
+            background: #fff5f5
+        }
+
+        /* -------------------------------------------------
+            폼 영역
             ------------------------------------------------- */
-            .form{
-                margin-top:20px;
-                padding:16px;
-                background:#fff;
-                border:1px solid var(--border);
-                border-radius:var(--radius-sm);
-                box-shadow:var(--shadow);
-            }
+        .form {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+        }
 
-            .form-grid{
-                display:grid;
-                grid-template-columns:1fr 1fr;
-                gap:14px 20px;
-            }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 20px;
+        }
 
-            .field{
-                display:flex; 
-                gap:8px}
+        .field {
+            display: flex;
+            /*flex-direction:column;*/
+            gap: 8px
+        }
 
-            .label{
-                width: 15%;
-                font-size:13px; color:var(--muted); font-weight:700;
-                display: flex;
-                flex-direction:column;
-                justify-content: center;
-            }
+        .label {
+            width: 15%;
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-            .input, .select, .date, .readonly{
-                width:60%;
-                padding:11px 12px;
-                border:1px solid var(--border);
-                border-radius:10px;
-                background:#fff;
-                color:#111827;
-                outline:none;
-                transition:border-color .15s ease, box-shadow .15s ease;
-            }
-            .input:focus, .select:focus, .date:focus{
-                border-color:#c4d3ff; 
-                box-shadow:var(--ring);
-            }
-            .readonly{
-                background:#fafafa; color:#6b7280;
-            }
+        .input,
+        .select,
+        .date,
+        .readonly {
+            width: 60%;
+            padding: 11px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: #111827;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
 
-            /* 텍스트 영역 */
-            .editor{
-                margin-top:16px;
-                display:flex; flex-direction:column; gap:8px;
-            }
-            .textarea{
-                width:100%;
-                min-height:260px;
-                resize:vertical;
-                padding:12px 14px;
-                border:1px solid var(--border);
-                border-radius:12px;
-                background:#fff;
-                outline:none;
-                transition:border-color .15s ease, box-shadow .15s ease;
-            }
-            .textarea::placeholder{
-                color:#9da3ae
-            }
-            .textarea:focus{
-                border-color:#c4d3ff; box-shadow:var(--ring)
-            }
+        .input:focus,
+        .select:focus,
+        .date:focus {
+            border-color: #c4d3ff;
+            box-shadow: var(--ring);
+        }
 
-            /* 하단 버튼 */
-            .form-actions{
-                margin-top:16px;
-                display:flex; justify-content:flex-end; gap:10px;
+        .readonly {
+            background: #fafafa;
+            color: #6b7280;
+        }
+
+        /* 텍스트 영역 */
+        .editor {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 260px;
+            resize: vertical;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+
+        .textarea::placeholder {
+            color: #9da3ae
+        }
+
+        .textarea:focus {
+            border-color: #c4d3ff;
+            box-shadow: var(--ring)
+        }
+
+        /* 하단 버튼 */
+        .form-actions {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-ghost {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: #111827;
+        }
+
+        .btn-ghost:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--ring)
+        }
+
+        .btn-solid {
+            background: var(--accent);
+            color: #fff;
+            border: 1px solid transparent;
+        }
+
+        .btn-solid:hover {
+            background: #5558e6;
+            box-shadow: var(--ring)
+        }
+
+        /* 이미지에 도형그리기 */
+        #wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        #map {
+            height: 400px;
+            /* 지도의 높이를 반드시 지정해야 합니다. */
+            width: 100%;
+        }
+
+        #map1 {
+            height: 400px;
+            /* 지도의 높이를 반드시 지정해야 합니다. */
+            width: 100%;
+        }
+
+        #map2 {
+            height: 400px;
+            /* 지도의 높이를 반드시 지정해야 합니다. */
+            width: 100%;
+        }
+
+        #mapImg {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            user-select: none;
+        }
+
+        .container {
+            display: flex;
+            align-items: flex-start;
+            /* 위쪽 맞춤 */
+            gap: 20px;
+            /* 이미지와 버튼 사이 간격 */
+        }
+
+        /* 오버레이를 CSS로 이미지 위에 '가득' 덮기: inset:0로 JS 사이즈 의존 제거 */
+        #overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            pointer-events: auto;
+            cursor: default;
+        }
+
+        .rect {
+            position: absolute;
+            border: 2px solid rgb(170, 0, 113);
+            background: rgba(196, 9, 140, 0.705);
+            box-sizing: border-box;
+        }
+
+        .rect.selected {
+            border-color: #ff4d4f;
+            box-shadow: 0 0 0 2px rgba(255, 77, 79, .35);
+        }
+
+        .toolbar {
+            margin: 10px 0;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-direction: column;
+        }
+
+        .toolbar button {
+            padding: 6px 10px;
+        }
+
+        /* 유효성 검사 css */
+        .is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, .15) !important;
+        }
+
+        .invalid-msg {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #ef4444;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            let msg = "{{ msg }}";
+            console.log("msg : " + msg);
+            if (msg != 'None' && msg != 'undefiened' != msg != null) {
+                alert(msg);
             }
+        });
 
-            .btn-ghost{
-                background:#fff; 
-                border:1px solid var(--border); 
-                color:#111827;
-            }
-            .btn-ghost:hover{
-                border-color:#cbd5e1; 
-                box-shadow:var(--ring)
-            }
+        var rects = [];
+        var autoId = 0;
+        // 이미지에 도형 그리기
+        $(function () {
+            const el = document.getElementById('overlay');
+            if (!el) { console.error('#overlay not found'); return; }
 
-            .btn-solid{
-                background:var(--accent); 
-                color:#fff; 
-                border:1px solid transparent;
-            }
-            .btn-solid:hover{
-                background:#5558e6; 
-                box-shadow:var(--ring)
-            }
+            // data-shapes 파싱
+            const raw = el.getAttribute('data-shapes') || '[]';
+            let SAVED_SHAPES = [];
+            try { SAVED_SHAPES = raw.trim() ? JSON.parse(raw) : []; } catch { /* ignore */ }
 
-            /* 이미지에 도형그리기 */
-            #wrap { position: relative; display: inline-block; }
-            #mapImg { display:block; max-width:100%; height:auto; user-select:none; }
-
-            .container {
-                display: flex;
-                align-items: flex-start; /* 위쪽 맞춤 */
-                gap: 20px;               /* 이미지와 버튼 사이 간격 */
-            }
-
-            /* 오버레이를 CSS로 이미지 위에 '가득' 덮기: inset:0로 JS 사이즈 의존 제거 */
-            #overlay {
-                position: absolute; inset: 0;
-                z-index: 5; pointer-events: auto; cursor: default;
-            }
-            .stage { position: relative; display:inline-block; }
-            .base-img { display:block; max-width:100%; height:auto; }
-
-            .rect {
-                position: absolute;
-                border: 2px solid rgb(170, 0, 113);
-                background: rgba(196, 9, 140, 0.705);
-                box-sizing: border-box;
-            }
-            .rect.selected { border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.35); }
-            .toolbar { margin:10px 0; display:flex; gap:8px; justify-content: flex-end; flex-direction: column;}
-            .toolbar button { padding:6px 10px; }
-
-            .btnList {
-                display: none !important;
-            }
-            /* 유효성 검사 css */
-            .is-invalid {
-                border-color: #ef4444 !important;
-                box-shadow: 0 0 0 3px rgba(239,68,68,.15) !important;
-            }
-            .invalid-msg {
-                margin-top: 6px;
-                font-size: 12px;
-                color: #ef4444;
-            }
-
-        </style>
-
-        <script>
-            $(document).ready(function(){
-                let msg = "{{ msg }}";
-                console.log("msg : " + msg);
-                if(msg != 'None' && msg != 'undefiened' != msg != null){
-                    alert(msg);
-                }
-            });
-
-            var rects = [];
-            var autoId = 0;
-            // 이미지에 도형 그리기
-            $(function () {
-                const el = document.getElementById('overlay');
-                if (!el) { console.error('#overlay not found'); return; }
-
-                // data-shapes 파싱
-                const raw = el.getAttribute('data-shapes') || '[]';
-                let SAVED_SHAPES = [];
-                try { SAVED_SHAPES = raw.trim() ? JSON.parse(raw) : []; } catch { /* ignore */ }
-
-                const $img = $('#mapImg');
-                if ($img.length === 0) {                 // ← 여기서 안전 체크
+            const $img = $('#mapImg');
+            if ($img.length === 0) {                 // ← 여기서 안전 체크
                 console.error('#mapImg not found');
                 return;
-                }
+            }
 
-                // 이미지가 이미 캐시 로드됐으면 바로, 아니면 load 후에
-                if ($img.prop('complete') && $img[0].naturalWidth) {
+            // 이미지가 이미 캐시 로드됐으면 바로, 아니면 load 후에
+            if ($img.prop('complete') && $img[0].naturalWidth) {
                 drawNow();
-                } else {
+            } else {
                 $img.one('load', drawNow);
-                }
-                $(window).on('resize', drawNow);
+            }
+            $(window).on('resize', drawNow);
 
-                function drawNow() {
-                    const overlay = document.getElementById('overlay');
-                    if (!overlay) return;
+            function drawNow() {
+                const overlay = document.getElementById('overlay');
+                if (!overlay) return;
 
-                    const W = overlay.clientWidth;
-                    const H = overlay.clientHeight;
-                    if (!W || !H) return;  // 크기 0이면 그려도 안 보임
+                const W = overlay.clientWidth;
+                const H = overlay.clientHeight;
+                if (!W || !H) return;  // 크기 0이면 그려도 안 보임
 
-                    overlay.innerHTML = '';
-                    SAVED_SHAPES.forEach(s => {
-                        const div = document.createElement('div');
-                        div.className = 'rect';
-                        div.style.position = 'absolute';
-                        div.style.boxSizing = 'border-box';
-                        div.style.border = '2px solid rgb(170, 0, 113)';
-                        div.style.background = 'rgba(196, 9, 140, 0.705)';
-                        div.style.left   = (s.x * W) + 'px';
-                        div.style.top    = (s.y * H) + 'px';
-                        div.style.width  = (s.w * W) + 'px';
-                        div.style.height = (s.h * H) + 'px';
-                        overlay.appendChild(div);
-                        $('.rect').data('id', (++autoId).toString());
-                    });
-                }
-
-
-                // 수정 권한 있을 경우
-                if("{{isMyPost}}"){
-                    $('.btnList').show();
-
-                    const $overlay = $('#overlay');
-                    let mode = 'idle';              // 'idle' | 'draw' | 'select'
-                    let drawing = false, start = {x:0, y:0};
-                    let $current = null,  selectedId = null
-                    
-
-                    function setMode(next) {
-                        mode = next;
-                        if (mode === 'draw') {
-                        $('#btnDraw').text('그리기 종료 (Esc)');
-                        $overlay.css('cursor','crosshair');
-                        } else {
-                        $('#btnDraw').text('영역(사각형) 표시');
-                        $overlay.css('cursor','default');
-                        cancelCurrentDrawing();
-                        }
-                        clearSelection();
-                    }
-                    $('#btnDraw').on('click', ()=> setMode(mode==='draw'?'idle':'draw'));
-
-                    // overlay 기준 상대좌표(스크롤 안전)
-                    function relPos(e){
-                        const off = $overlay.offset();
-                        return { x: e.pageX - off.left, y: e.pageY - off.top };
-                    }
-
-                    // 드로잉
-                    $overlay.on('mousedown', function(e){
-                        console.log("mouse down");
-                        if (mode !== 'draw') return;
-                        drawing = true;
-                        start = relPos(e);
-                        $current = $('<div class="rect"></div>').css({
-                        left:start.x, top:start.y, width:0, height:0
-                        }).appendTo($overlay);
-                        $current.data('id', (++autoId).toString());
-                    });
-
-                    $(document).on('mousemove', function(e){
-                        if (!drawing || !$current) return;
-                        const p = relPos(e);
-                        const x = Math.min(p.x, start.x);
-                        const y = Math.min(p.y, start.y);
-                        const w = Math.abs(p.x - start.x);
-                        const h = Math.abs(p.y - start.y);
-                        $current.css({ left:x, top:y, width:w, height:h });
-                    });
-
-                    $(document).on('mouseup', function(){
-                        console.log("mouse up");
-                        if (!drawing || !$current) return;
-                        drawing = false;
-
-                        const x = parseFloat($current.css('left'));
-                        const y = parseFloat($current.css('top'));
-                        const w = parseFloat($current.css('width'));
-                        const h = parseFloat($current.css('height'));
-                        if (w < 3 || h < 3) { $current.remove(); $current = null; return; }
-
-                        rects.push({ id:$current.data('id'), x, y, w, h });
-                        $current = null;
-                    });
-
-                    // 선택/해제
-                    $overlay.on('click', '.rect', function(e){
-                        console.log("rect Clicked!! 선택 ");
-                        if (mode === 'draw') return;
-                        e.stopPropagation();
-                        const $r = $(this), id = $r.data('id');
-                        console.log("id : " + id);
-
-                        if (selectedId === id) { clearSelection(); return; }
-                        clearSelection(); selectedId = id; $r.addClass('selected'); mode='select';
-                    });
-                    $overlay.on('click', function(e){
-                        console.log("rect Clicked!! 해제");
-                        if ($(e.target).hasClass('rect')) return;
-                        clearSelection(); if (mode==='select') mode='idle';
-                    });
-                    function clearSelection(){ selectedId=null; $overlay.find('.rect').removeClass('selected'); }
-                    function cancelCurrentDrawing(){ drawing=false; if($current){$current.remove(); $current=null;} }
-
-                    // 삭제/초기화
-                    $('#btnDelete').on('click', function(){
-                        if (!selectedId) return;
-                        $overlay.find(`.rect`).each(function(){ 
-                            console.log("this.id : " + $(this).data('id'));
-                            console.log("selected id : " + selectedId);
-                            if($(this).data('id')===selectedId) $(this).remove(); });
-                        rects = rects.filter(r=>r.id!==selectedId); clearSelection(); mode='idle';
-                    });
-                    $('#btnClear').on('click', function(){
-                        rects=[]; $overlay.find('.rect').remove(); clearSelection(); cancelCurrentDrawing(); setMode('idle');
-                    });
-
-                }
-
-            });
-
-            // 카테고리 selectBox 선택시 화면 유형 전환        
-            $(function(){
-                $(".category").hide();  // 카테고리별 화면 숨기고 시작
-
-                category = $("#categorySelect").val();
-                if(category == '시설이용'){
-                    $("#1").show();
-
-                    if($("#facility").val() == '교육장' || $("#facility").val() == '회의실'){
-                        $("#facilityDetail").show();
-                    }
-                }
-
-                // 내 모집글일 경우 바로 수정가능
-                if("{{isMyPost}}" != 'False' && ("{{post.statu}}" == '1')){
-                    $('.editable').attr('readonly', false);
-                    $('#categorySelect').attr('disabled', false);
-                }
-
-                $("#categorySelect").on("change", function(){
-                    const selectValue = $(this).val();
-                    $(".category").hide();
-                    if(selectValue == '시설이용'){
-                        $("#1").show();
-                    }
+                overlay.innerHTML = '';
+                SAVED_SHAPES.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'rect';
+                    div.style.position = 'absolute';
+                    div.style.boxSizing = 'border-box';
+                    div.style.border = '2px solid rgb(170, 0, 113)';
+                    div.style.background = 'rgba(196, 9, 140, 0.705)';
+                    div.style.left = (s.x * W) + 'px';
+                    div.style.top = (s.y * H) + 'px';
+                    div.style.width = (s.w * W) + 'px';
+                    div.style.height = (s.h * H) + 'px';
+                    overlay.appendChild(div);
+                    $('.rect').data('id', (++autoId).toString());
                 });
-                
-                $('#facility').on("change", function(){
-                    selectValue = $(this).val();
-                    if(selectValue == '교육장' || selectValue == '회의실'){
-                        $("#facilityDetail").show();
+            }
+
+
+            // 수정 권한 있을 경우
+            if ("{{isMyPost}}") {
+                $('.btnList').show();
+
+                const $overlay = $('#overlay');
+                let mode = 'idle';              // 'idle' | 'draw' | 'select'
+                let drawing = false, start = { x: 0, y: 0 };
+                let $current = null, selectedId = null
+
+
+                function setMode(next) {
+                    mode = next;
+                    if (mode === 'draw') {
+                        $('#btnDraw').text('그리기 종료 (Esc)');
+                        $overlay.css('cursor', 'crosshair');
                     } else {
-                        $("#facilityDetail").hide();
+                        $('#btnDraw').text('영역(사각형) 표시');
+                        $overlay.css('cursor', 'default');
+                        cancelCurrentDrawing();
                     }
-                })
-                
+                    clearSelection();
+                }
+                $('#btnDraw').on('click', () => setMode(mode === 'draw' ? 'idle' : 'draw'));
+
+                // overlay 기준 상대좌표(스크롤 안전)
+                function relPos(e) {
+                    const off = $overlay.offset();
+                    return { x: e.pageX - off.left, y: e.pageY - off.top };
+                }
+
+                // 드로잉
+                $overlay.on('mousedown', function (e) {
+                    console.log("mouse down");
+                    if (mode !== 'draw') return;
+                    drawing = true;
+                    start = relPos(e);
+                    $current = $('<div class="rect"></div>').css({
+                        left: start.x, top: start.y, width: 0, height: 0
+                    }).appendTo($overlay);
+                    $current.data('id', (++autoId).toString());
+                });
+
+                $(document).on('mousemove', function (e) {
+                    if (!drawing || !$current) return;
+                    const p = relPos(e);
+                    const x = Math.min(p.x, start.x);
+                    const y = Math.min(p.y, start.y);
+                    const w = Math.abs(p.x - start.x);
+                    const h = Math.abs(p.y - start.y);
+                    $current.css({ left: x, top: y, width: w, height: h });
+                });
+
+                $(document).on('mouseup', function () {
+                    console.log("mouse up");
+                    if (!drawing || !$current) return;
+                    drawing = false;
+
+                    const x = parseFloat($current.css('left'));
+                    const y = parseFloat($current.css('top'));
+                    const w = parseFloat($current.css('width'));
+                    const h = parseFloat($current.css('height'));
+                    if (w < 3 || h < 3) { $current.remove(); $current = null; return; }
+
+                    rects.push({ id: $current.data('id'), x, y, w, h });
+                    $current = null;
+                });
+
+                // 선택/해제
+                $overlay.on('click', '.rect', function (e) {
+                    console.log("rect Clicked!! 선택 ");
+                    if (mode === 'draw') return;
+                    e.stopPropagation();
+                    const $r = $(this), id = $r.data('id');
+                    console.log("id : " + id);
+
+                    if (selectedId === id) { clearSelection(); return; }
+                    clearSelection(); selectedId = id; $r.addClass('selected'); mode = 'select';
+                });
+                $overlay.on('click', function (e) {
+                    console.log("rect Clicked!! 해제");
+                    if ($(e.target).hasClass('rect')) return;
+                    clearSelection(); if (mode === 'select') mode = 'idle';
+                });
+                function clearSelection() { selectedId = null; $overlay.find('.rect').removeClass('selected'); }
+                function cancelCurrentDrawing() { drawing = false; if ($current) { $current.remove(); $current = null; } }
+
+                // 삭제/초기화
+                $('#btnDelete').on('click', function () {
+                    if (!selectedId) return;
+                    $overlay.find(`.rect`).each(function () {
+                        console.log("this.id : " + $(this).data('id'));
+                        console.log("selected id : " + selectedId);
+                        if ($(this).data('id') === selectedId) $(this).remove();
+                    });
+                    rects = rects.filter(r => r.id !== selectedId); clearSelection(); mode = 'idle';
+                });
+                $('#btnClear').on('click', function () {
+                    rects = []; $overlay.find('.rect').remove(); clearSelection(); cancelCurrentDrawing(); setMode('idle');
+                });
+
+            }
+
+        });
+        // 카테고리 selectBox 선택시 화면 유형 전환        
+        $(function () {
+            $(".category").hide();  // 카테고리별 화면 숨기고 시작
+            category = $("#categorySelect").val();
+            if (category == '시설이용') {
+                $("#1").show();
+
+                if ($("#facility").val() == '교육장' || $("#facility").val() == '회의실') {
+                    $("#facilityDetail").show();
+                }
+            }
+            // 내 모집글일 경우 바로 수정가능
+            if ("{{isMyPost}}" != 'False' && ("{{post.statu}}" == '1')) {
+                $('.editable').attr('readonly', false);
+                $('#categorySelect').attr('disabled', false);
+            }
+
+            $("#categorySelect").on("change", function () {
+                const selectValue = $(this).val();
+                $(".category").hide();
             });
-            function showError($el, msg){
-                $el.addClass('is-invalid');
-                const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
-                if($wrap.find('.invalid-msg').length===0){
-                    $('<div class="invalid-msg"></div>').text(msg).appendTo($wrap);
-                }else{
-                    $wrap.find('.invalid-msg').text(msg);
-                }
-            }
-            function clearError($el){
-                $el.removeClass('is-invalid');
-                const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
-                $wrap.find('.invalid-msg').remove();
-            }
 
-            
-            function checkValid(categoryVal){
-                const $form = $('#info');   
-
-                // ✅ 사용자가 #info 버튼을 눌렀을 때 유효성 검사 실행
-                let ok = true, $firstInvalid = null;
-
-                const $title = $form.find('input[name="title"]');
-                if(!$title.val() || !$title.val().trim()){
-                    ok=false; showError($title,'제목을 입력해 주세요.'); if(!$firstInvalid) $firstInvalid=$title;
-                } else clearError($title);
-
-                const $required = $form.find('input[name="required"]');
-                if(!$required.val() || !$required.val().trim()){
-                    ok=false; showError($required,'모집인원을 입력해 주세요.'); if(!$firstInvalid) $firstInvalid=$required;
-                } else clearError($required);
-
-                const $closing_date = $form.find('input[name="closing_date"]');
-                const closeDateOk = /^\d{4}-\d{2}-\d{2}$/.test($closing_date.val()||'');
-                if(!closeDateOk){
-                    ok=false; showError($closing_date,'마감일을 선택해 주세요.'); if(!$firstInvalid) $firstInvalid=$closing_date;
-                } else clearError($closing_date);
-
-                const $closing_time = $form.find('input[name="closing_time"]');
-                // 정규식: 00:00 ~ 23:59 까지 허용
-                const closeTimeOk = /^([01]\d|2[0-3]):([0-5]\d)$/.test($closing_time.val() || '');
-
-                if (!closeTimeOk) {
-                    ok = false;
-                    showError($closing_time, '마감 시간을 입력해 주세요.');
-                    if (!$firstInvalid) $firstInvalid = $closing_time;
+            $('#facility').on("change", function () {
+                selectValue = $(this).val();
+                if (selectValue == '교육장' || selectValue == '회의실') {
+                    $("#facilityDetail").show();
                 } else {
-                    clearError($closing_time);
+                    $("#facilityDetail").hide();
                 }
+            })
+        });
 
-                const $start_date = $form.find('input[name="start_date"]');
-                const dateOk = /^\d{4}-\d{2}-\d{2}$/.test($start_date.val()||'');
-                if(!dateOk){
-                    ok=false; showError($start_date,'시작일을 선택해 주세요.'); if(!$firstInvalid) $firstInvalid=$start_date;
-                } else clearError($start_date);
-
-                const $start_time = $form.find('input[name="start_time"]');
-                // 정규식: 00:00 ~ 23:59 까지 허용
-                const timeOk = /^([01]\d|2[0-3]):([0-5]\d)$/.test($start_time.val() || '');
-
-                if (!timeOk) {
-                    ok = false;
-                    showError($start_time, '시작 시간을 입력해 주세요.');
-                    if (!$firstInvalid) $firstInvalid = $start_time;
-                } else {
-                    clearError($start_time);
-                }
-                
-                const $content = $form.find('textarea[name="content"]');
-                if(!$content.val() || !$content.val().trim()){
-                ok=false; showError($content,'내용을 입력해 주세요.'); if(!$firstInvalid) $firstInvalid=$content;
-                } else clearError($content);
-
-                /* 카테고리별 검사 다르게 */
-                if(categoryVal == '시설이용'){
-                    const $facility = $('#facility');
-                    if($facility.val() == '0'){
-                        ok=false; showError($facility,'시설물을 선택해 주세요.'); if(!$firstInvalid) $firstInvalid=$facility;
-                    } else clearError($facility);
-                }
-
-                if(!ok){
-                    const el = $firstInvalid[0];
-                    el.scrollIntoView({behavior:'smooth', block:'center'});
-                    $firstInvalid.focus();
-                    return false; // ❌ 제출하지 않음
-                }
+        function showError($el, msg) {
+            $el.addClass('is-invalid');
+            const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
+            if ($wrap.find('.invalid-msg').length === 0) {
+                $('<div class="invalid-msg"></div>').text(msg).appendTo($wrap);
+            } else {
+                $wrap.find('.invalid-msg').text(msg);
+            }
+        }
+        function clearError($el) {
+            $el.removeClass('is-invalid');
+            const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
+            $wrap.find('.invalid-msg').remove();
+        }
 
 
-                return true;
+        function checkValid(categoryVal) {
+            const $form = $('#info');
+
+            // ✅ 사용자가 #info 버튼을 눌렀을 때 유효성 검사 실행
+            let ok = true, $firstInvalid = null;
+
+            const $title = $form.find('input[name="title"]');
+            if (!$title.val() || !$title.val().trim()) {
+                ok = false; showError($title, '제목을 입력해 주세요.'); if (!$firstInvalid) $firstInvalid = $title;
+            } else clearError($title);
+
+            const $required = $form.find('input[name="required"]');
+            if (!$required.val() || !$required.val().trim()) {
+                ok = false; showError($required, '모집인원을 입력해 주세요.'); if (!$firstInvalid) $firstInvalid = $required;
+            } else clearError($required);
+
+            const $closing_date = $form.find('input[name="closing_date"]');
+            const closeDateOk = /^\d{4}-\d{2}-\d{2}$/.test($closing_date.val() || '');
+            if (!closeDateOk) {
+                ok = false; showError($closing_date, '마감일을 선택해 주세요.'); if (!$firstInvalid) $firstInvalid = $closing_date;
+            } else clearError($closing_date);
+
+            const $closing_time = $form.find('input[name="closing_time"]');
+            // 정규식: 00:00 ~ 23:59 까지 허용
+            const closeTimeOk = /^([01]\d|2[0-3]):([0-5]\d)$/.test($closing_time.val() || '');
+
+            if (!closeTimeOk) {
+                ok = false;
+                showError($closing_time, '마감 시간을 입력해 주세요.');
+                if (!$firstInvalid) $firstInvalid = $closing_time;
+            } else {
+                clearError($closing_time);
             }
 
-            function doApply(){
-                // 지원 하고 나면 마이페이지로 이동
+            const $start_date = $form.find('input[name="start_date"]');
+            const dateOk = /^\d{4}-\d{2}-\d{2}$/.test($start_date.val() || '');
+            if (!dateOk) {
+                ok = false; showError($start_date, '시작일을 선택해 주세요.'); if (!$firstInvalid) $firstInvalid = $start_date;
+            } else clearError($start_date);
+
+            const $start_time = $form.find('input[name="start_time"]');
+            // 정규식: 00:00 ~ 23:59 까지 허용
+            const timeOk = /^([01]\d|2[0-3]):([0-5]\d)$/.test($start_time.val() || '');
+
+            if (!timeOk) {
+                ok = false;
+                showError($start_time, '시작 시간을 입력해 주세요.');
+                if (!$firstInvalid) $firstInvalid = $start_time;
+            } else {
+                clearError($start_time);
+            }
+
+            const $content = $form.find('textarea[name="content"]');
+            if (!$content.val() || !$content.val().trim()) {
+                ok = false; showError($content, '내용을 입력해 주세요.'); if (!$firstInvalid) $firstInvalid = $content;
+            } else clearError($content);
+
+            /* 카테고리별 검사 다르게 */
+            if (categoryVal == '시설이용') {
+                const $facility = $('#facility');
+                if ($facility.val() == '0') {
+                    ok = false; showError($facility, '시설물을 선택해 주세요.'); if (!$firstInvalid) $firstInvalid = $facility;
+                } else clearError($facility);
+            }
+
+            if (!ok) {
+                const el = $firstInvalid[0];
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                $firstInvalid.focus();
+                return false; // ❌ 제출하지 않음
+            }
+
+
+            return true;
+        }
+
+        function doApply() {
+            // 지원 하고 나면 마이페이지로 이동
+            const form = document.getElementById("info");
+            form.submit();
+        }
+
+
+        function goMain() {
+            location.href = '/';
+        }
+
+        function doCancel() {
+            const form = document.getElementById("info");
+            form.action = '/post/cancel/{{post._id}}'
+            form.submit();
+        }
+
+        function doClose() {
+            const form = document.getElementById("info");
+            const result = confirm('마감처리 하시면 취소할 수 없습니다. 마감하시겠습니까?');
+
+            if (result) {
                 const form = document.getElementById("info");
+                form.action = '/post/close/{{post._id}}'
                 form.submit();
             }
+        }
 
+        function doUpdate() {
+            const form = document.getElementById("info");
+            const categoryVal = $("#categorySelect").val();
 
-            function goMain(){
-                location.href = '/';
-            }
+            // 유효성 검사 method
+            if (!checkValid(categoryVal)) {
+                return false;
+            };
 
-            function doCancel(){
-                const form = document.getElementById("info");
-                form.action = '/post/cancel/{{post._id}}'
-                form.submit();
-            }
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "category";
+            hidden.value = categoryVal;
+            form.appendChild(hidden);
 
-            function doClose(){
-                const result = confirm('마감처리 하시면 취소할 수 없습니다. 마감하시겠습니까?');
-
-                if(result){
-                    const form = document.getElementById("info");
-                    form.action = '/post/close/{{post._id}}'
-                    form.submit();
-                }
-            }
-
-            function doUpdate(){
-                const form = document.getElementById("info");
-                const categoryVal = $("#categorySelect").val();
-
-                // 유효성 검사 method
-                if(!checkValid(categoryVal)){
-                    return false;
-                };
+            if (categoryVal == '시설이용') {     // 시설이용 : 공간 좌표, 카테고리, 카테고리 상세
+                const facility = $("#facility").val();
 
                 const hidden = document.createElement("input");
                 hidden.type = "hidden";
-                hidden.name = "category";
-                hidden.value = categoryVal;
+                hidden.name = "facility";
+                hidden.value = facility;
                 form.appendChild(hidden);
 
-                if(categoryVal == '시설이용'){     // 시설이용 : 공간 좌표, 카테고리, 카테고리 상세
-                    const facility = $("#facility").val();
+                // 이미지 도형 좌표값
+                const rect = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "rect";
 
+                const $overlay = $('#overlay');
+                const W = $overlay.width(), H = $overlay.height();
+                const normalized = rects.map(r => ({ id: r.id, x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H }));
+                hidden.value = JSON.stringify(normalized);
+                form.appendChild(rect);
+
+                if (facility == '교육장' || facility == '회의실') {
                     const hidden = document.createElement("input");
                     hidden.type = "hidden";
-                    hidden.name = "facility";
-                    hidden.value = facility;
+                    hidden.name = "facilityDetail";
+                    hidden.value = facilityDetail;
                     form.appendChild(hidden);
-
-                    // 이미지 도형 좌표값
-                    const rect = document.createElement("input");
-                    hidden.type = "hidden";
-                    hidden.name = "rect";
-
-                    const $overlay = $('#overlay');
-                    const W = $overlay.width(), H = $overlay.height();
-                    const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
-                    hidden.value = JSON.stringify(normalized);
-                    form.appendChild(rect);
-
-                    if(facility == '교육장' || facility == '회의실'){
-                        const hidden = document.createElement("input");
-                        hidden.type = "hidden";
-                        hidden.name = "facilityDetail";
-                        hidden.value = facilityDetail;
-                        form.appendChild(hidden);                 
-                    }
                 }
-                form.action = '/post/update/{{post._id}}'
-                form.submit();
             }
+            form.action = '/post/update/{{post._id}}'
+            form.submit();
+        }
+        function doReply() {
+            const userId = "{{session.get('user')}}";
+            const replyContent = $("#reply_content").val();
 
-            function doReply(){
-                const userId = "{{session.get('user')}}";
-                const replyContent = $("#reply_content").val();
+            // 비동기 통신으로 insert
+            $.ajax({
+                url: '/ajax/reply',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    postId: "{{post._id}}",
+                    userId: userId,
+                    replyContent: replyContent,
+                    created_at: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+                }),
+                success: function (res) {
+                    if (res.ok) {
+                        // 사용자 입력칸 초기화
+                        $("#reply_content").val("");
 
-                // 비동기 통신으로 insert
-                $.ajax({
-                    url: '/ajax/reply',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                        postId: "{{post._id}}",
-                        userId: userId,
-                        replyContent: replyContent,
-                        created_at: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
-                    }),
-                    success: function(res){
-                        if(res.ok){
-                            // 사용자 입력칸 초기화
-                            $("#reply_content").val("");
-
-                            // 서버가 렌더해준 HTML 조각을 그대로 붙임
-                            const r = res.data;
-                            const tr = `<tr>
+                        // 서버가 렌더해준 HTML 조각을 그대로 붙임
+                        const r = res.data;
+                        const tr = `<tr>
                                     <td>${r.userId}</td>
                                     <td>${r.replyContent}</td>
                                     <td>${r.created_at}</td>
                                     </tr>`;
-                            $('#replyTable > tbody').last().append(tr);
-                        } else {
-                            alert("여기도 실패");
-                        }
-                    },
-                    error: function(xhr){
-                        alert('실패: ' + (xhr.responseJSON?.message || xhr.statusText));
+                        $('#replyTable > tbody').last().append(tr);
+                    } else {
+                        alert("여기도 실패");
                     }
-                });
+                },
+                error: function (xhr) {
+                    alert('실패: ' + (xhr.responseJSON?.message || xhr.statusText));
+                }
+            });
 
-                // response로 화면에 append
+            // response로 화면에 append
+            location.href = location.href;
+        }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const runningMapElement = document.getElementById('map');
+            const destMapElement = document.getElementById('map1');
+
+            // 목적지 맵이 존재하는지 확인
+            if (destMapElement) {
+                // 서버에서 전달된 위도와 경도 값을 가져와 숫자로 변환합니다.
+                const destLat = parseFloat("{{post.dest_lat}}");
+                const destLng = parseFloat("{{post.dest_lng}}");
+
+                // 유효한 숫자인지 확인
+                if (!isNaN(destLat) && !isNaN(destLng)) {
+                    // map1 요소를 사용하여 Leaflet 지도를 초기화하고, 뷰를 설정합니다.
+                    const map = L.map('map1').setView([destLat, destLng], 16);
+
+                    // OpenStreetMap 타일 레이어를 추가합니다.
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    // 목적지 위치에 마커를 추가하고 팝업을 띄웁니다.
+
+                    L.marker([destLat, destLng])
+                        .addTo(map)
+                        .bindPopup("<b>목적지</b>")
+                        .openPopup();
+                } else {
+                    // 유효하지 않은 데이터인 경우 맵 요소를 숨깁니다.
+                    destMapElement.style.display = 'none';
+                }
             }
 
-        </script>
+            // 맵 1 (러닝/산책)
+            if (runningMapElement) {
+                const runningPointsRaw = runningMapElement.textContent.trim();
+                if (runningPointsRaw) {
+                    try {
+                        const runningPoints = JSON.parse(runningPointsRaw);
+
+                        const map = L.map('map').setView([runningPoints[0].lat, runningPoints[0].lng], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+
+                        runningPoints.forEach(point => {
+                            L.marker([point.lat, point.lng])
+                                .addTo(map)
+                                .bindPopup(`<b>Running Point</b><br>Lat: ${point.lat}<br>Lng: ${point.lng}`);
+                        });
+
+                        const latlngs = runningPoints.map(point => [point.lat, point.lng]);
+                        const polyline = L.polyline(latlngs, {
+                            color: 'red'
+                        }).addTo(map);
+
+                        map.fitBounds(polyline.getBounds());
+
+                    } catch (e) {
+                        console.error("Failed to parse runningPoints:", e);
+                    }
+                } else {
+                    // 데이터가 없으면 맵 요소 삭제
+                    runningMapElement.remove();
+                }
+            }
+            // 택시 맵 초기화
+            const taxiMapElement = document.getElementById('map2');
+            const taxiDestinationElement = document.getElementById('taxi_destination_text');
+
+            if (taxiMapElement && taxiDestinationElement) {
+                const taxiDestination = taxiDestinationElement.textContent.trim();
+                const startLatLng = [37.2697, 127.2078]; // 출발지 고정
+
+                const matches = taxiDestination.match(/위도: ([\d.]+), 경도: ([\d.]+)/);
+                if (matches && matches.length === 3) {
+                    const lat = parseFloat(matches[1]);
+                    const lng = parseFloat(matches[2]);
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const destinationLatLng = [lat, lng];
+                        const map = L.map('map2').setView(destinationLatLng, 16);
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+
+                        L.marker(startLatLng).addTo(map).bindPopup("출발지").openPopup();
+                        L.marker(destinationLatLng).addTo(map).bindPopup("목적지").openPopup();
+
+                        // 🔽 최단 경로 그리기
+                        L.Routing.control({
+                            waypoints: [L.latLng(startLatLng), L.latLng(destinationLatLng)],
+                            routeWhileDragging: false,
+                            createMarker: function () { return null; },
+                            showAlternatives: false,
+                            showInstructions: false,
+                            lineOptions: { styles: [{ color: '#0066cc', weight: 5, opacity: 0.7 }] }
+                        }).addTo(map);
+
+                    } else {
+                        console.error("Failed to parse latitude or longitude from the string.");
+                        taxiMapElement.style.display = 'none';
+                    }
+                } else {
+                    // 주소 기반 목적지 처리
+                    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(taxiDestination)}&format=json&limit=1`;
+
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.length > 0) {
+                                const lat = parseFloat(data[0].lat);
+                                const lon = parseFloat(data[0].lon);
+                                const destinationLatLng = [lat, lon];
+
+                                // 기존 지도 초기화
+                                const container = L.DomUtil.get('map2');
+                                if (container != null) {
+                                    container._leaflet_id = null;
+                                }
+
+                                const map = L.map('map2').setView(destinationLatLng, 16);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                }).addTo(map);
+
+                                L.marker(startLatLng).addTo(map).bindPopup("출발지").openPopup();
+                                L.marker(destinationLatLng).addTo(map).bindPopup("목적지").openPopup();
+
+                                // 🔽 최단 경로 그리기
+                                L.Routing.control({
+                                    waypoints: [L.latLng(startLatLng), L.latLng(destinationLatLng)],
+                                    routeWhileDragging: false,
+                                    createMarker: function () { return null; },
+                                    showAlternatives: false,
+                                    showInstructions: false,
+                                    lineOptions: { styles: [{ color: '#0066cc', weight: 5, opacity: 0.7 }] }
+                                }).addTo(map);
+
+                            } else {
+                                alert('주소를 찾을 수 없습니다.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                            alert('주소 검색 중 오류가 발생했습니다.');
+                        });
+                }
+            }
+
+        });
+    </script>
 
 
-    </head>
+</head>
 
-    <body>
+<body>
 
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-            <div class="container-fluid">
-                <div class="mx-auto">
-                    <a class="navbar-brand" href="/">WithMe</a>
-                </div>
-                <div class="d-flex">
-                    <a class="btn btn-outline-light me-2" href="/post/new">새 글 작성</a>
-                    <a class="btn btn-outline-light me-2" href="/mypage">마이페이지</a>
-                    <a class="btn btn-outline-light" href="/logout">로그아웃</a>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <div class="mx-auto">
+                <a class="navbar-brand" href="/">WithMe</a>
             </div>
-        </nav>
-
-        <div class="app page-scope">
-            <div class="field" style="margin-bottom: 5%;">
-                <label class="label">카테고리</label>
-                <select class="select" id="categorySelect" disabled>
-                    <option {{ 'selected' if post.category == '기타'   else '' }}>기타</option>
-                    <option {{ 'selected' if post.category == '시설이용'   else '' }}>시설이용</option>
-                    <option {{ 'selected' if post.category == '러닝/산책'   else '' }}>러닝/산책</option>
-                    <option {{ 'selected' if post.category == '배달'   else '' }}>배달</option>
-                    <option {{ 'selected' if post.category == '외출'   else '' }}>외출</option>
-                    <option {{ 'selected' if post.category == '택시'   else '' }}>택시</option>
-                </select>
+            <div class="d-flex">
+                <a class="btn btn-outline-light me-2" href="/post/new">새 글 작성</a>
+                <a class="btn btn-outline-light me-2" href="/mypage">마이페이지</a>
+                <a class="btn btn-outline-light" href="/logout">로그아웃</a>
             </div>
+        </div>
+    </nav>
 
-            <div class="category" id="1">
-                <!-- 좌측 : 그림 -->
-                <div class="container">
-                    <div id="wrap" style="position:relative; display:inline-block; max-width: 50%;">
-                        <img id="mapImg" src="{{ url_for('static', filename='campus_map.png') }}" draggable="false" style="display: block; user-select: none;" alt="campus map">
-                        <div id="overlay" style="position:absolute; left:0; top:0; z-index: 5; pointer-events:auto;" data-shapes='{{ shapes_json | e }}'></div>
-                    </div>
+    <div class="app page-scope">
+        <div class="field" style="margin-bottom: 5%;">
+            <label class="label">카테고리</label>
+            <select class="select" id="categorySelect" disabled>
+                <option {{ 'selected' if post.category=='기타' else '' }}>기타</option>
+                <option {{ 'selected' if post.category=='시설이용' else '' }}>시설이용</option>
+                <option {{ 'selected' if post.category=='러닝/산책' else '' }}>러닝/산책</option>
+                <option {{ 'selected' if post.category=='배달' else '' }}>배달</option>
+                <option {{ 'selected' if post.category=='외출' else '' }}>외출</option>
+                <option {{ 'selected' if post.category=='택시' else '' }}>택시</option>
+            </select>
+        </div>
+
+        <div class="category" id="1">
+            <!-- 좌측 : 그림 -->
+            <div class="container">
+                <div id="wrap" style="position:relative; display:inline-block; max-width: 50%;">
+                    <img id="mapImg" src="{{ url_for('static', filename='campus_map.png') }}" draggable="false"
+                        style="display: block; user-select: none;" alt="campus map">
+                    <div id="overlay" style="position:absolute; left:0; top:0; z-index: 5; pointer-events:auto;"
+                        data-shapes='{{ shapes_json | e }}'></div>
+                </div>
 
                 <!-- 우측: 버튼목록 -->
-                    <div class="toolbar btnList">
-                        <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
-                        <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
-                        <button id="btnClear" class="btn btn-primary">전체 삭제</button>
-                    </div>
-                    <div class="toolbar">
-                         <select class="select" id="facility" style="width: 100%;" disabled>
-                            <option value="0">시설물 선택</option>
-                            <option {{ 'selected' if post.facility == '정글스테이지'   else '' }}>정글스테이지</option>
-                            <option {{ 'selected' if post.facility == '카페테리아'   else '' }}>카페테리아</option>
-                            <option {{ 'selected' if post.facility == '편의점'   else '' }}>편의점</option>
-                            <option {{ 'selected' if post.facility == '택배보관소'   else '' }}>택배보관소</option>
-                            <option {{ 'selected' if post.facility == '헬스장'   else '' }}>헬스장</option>
-                            <option {{ 'selected' if post.facility == '세탁실'   else '' }}>세탁실</option>
-                            <option {{ 'selected' if post.facility == '교육장'   else '' }}>교육장</option>
-                            <option {{ 'selected' if post.facility == '회의실'   else '' }}>회의실</option>
-                        </select>
-                        <input id="facilityDetail" class="input" type="text" placeholder="상세정보" style="width: 100%; display: none;" value="{{post.facilityDetail}}">
-                    </div>
+                <div class="toolbar btnList">
+                    <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
+                    <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
+                    <button id="btnClear" class="btn btn-primary">전체 삭제</button>
+                    <!-- <button id="btnSave" class="btn btn-primary">저장</button> -->
                 </div>
-
+                <div class="toolbar">
+                    <select class="select" id="facility" style="width: 100%;" disabled>
+                        <option value="0">시설물 선택</option>
+                        <option {{ 'selected' if post.facility=='정글스테이지' else '' }}>정글스테이지</option>
+                        <option {{ 'selected' if post.facility=='카페테리아' else '' }}>카페테리아</option>
+                        <option {{ 'selected' if post.facility=='편의점' else '' }}>편의점</option>
+                        <option {{ 'selected' if post.facility=='택배보관소' else '' }}>택배보관소</option>
+                        <option {{ 'selected' if post.facility=='헬스장' else '' }}>헬스장</option>
+                        <option {{ 'selected' if post.facility=='세탁실' else '' }}>세탁실</option>
+                        <option {{ 'selected' if post.facility=='교육장' else '' }}>교육장</option>
+                        <option {{ 'selected' if post.facility=='회의실' else '' }}>회의실</option>
+                    </select>
+                    <input id="facilityDetail" class="input" type="text" placeholder="상세정보"
+                        style="width: 100%; display: none;" value="{{post.facilityDetail}}">
+                </div>
             </div>
-
-
-
-            <!-- 폼 -->
-            <form class="form" id="info" action="/post/participate/{{post._id}}" method="post">
-                <input type="hidden" value="{{post._id}}" name="id">
-                <div class="form-grid">
-                    <div class="field">
-                        <label class="label">제목</label>
-                        <input class="input editable" name="title" type="text"  value="{{post.title}}" placeholder="제목을 입력하세요." readonly>
-                    </div>
-                    <div class="field">
-                        <label class="label">작성자</label>
-                        <input class="input" name="author" type="text" value="{{post.author}}" readonly>
-                    </div>
-                    <div class="field">
-                        <label class="label">모집인원</label>
-                        <input class="input editable" name="required" type="number" value="{{post.required}}" placeholder="예: 5" readonly>
-                    </div>
-                    <div class="field">
-                        <label class="label">조회수</label>
-                        <input class="readonly" name="viewcount" type="text" value="{{post.viewcount}}" readonly>
-                    </div>
-                    <div class="field">
-                        <label class="label">마감일</label>
-                        <input class="date editable" name="closing_date" type="date" value="{{post.closing_date}}" readonly>
-                        <input class="editable" type="time" name="closing_time" value="{{post.closing_time}}" readonly>
-                    </div>
-                    <div class="field">
-                        <label class="label">시작일</label>
-                        <input class="date editable" name="start_date" type="date" value="{{post.start_date}}" readonly>
-                        <input class="editable" type="time" name="start_time" value="{{post.start_time}}" readonly>
-                    </div>
-                    
-                </div>
-
-                <div class="editor">
-                    <label class="label">내용</label>
-                    <textarea class="textarea editable" name="content" readonly>{{post.content}}</textarea>
-                </div>
-
-                {% if participants %}
-                <table class="table table-bordered" style="text-align: center; margin-top: 1rem;">
-                    <tr>
-                        <td>
-                            참여자
-                        </td>
-                        <td>
-                            참석일
-                        </td>
-                    </tr>
-                    {%for participant in participants%}
-                    <tr style="vertical-align: middle;">
-                        <td>
-                            {{participant.user_id}}
-                        </td>
-                        <td>
-                            {{participant.participated_time}}
-                        </td>
-                    </tr>
-                    {%endfor%}
-                </table>
-                {% else %}
-                <div class="alert alert-secondary"  style="text-align: center; margin-top: 1rem;" role="alert">
-                    참여자가 없습니다.
-                </div>
-                {% endif %}
-                
-                <div class="form-actions">
-                    <button class="btn btn-ghost" type="button" onclick="goMain();">목록으로</button>
-                    {% if post.statu == 1 %}
-                        {% if isMyPost %}
-                        <button class="btn btn-solid" type="button" onclick="doUpdate();">수정하기</button>
-                        <button class="btn btn-solid" type="button" onclick="doClose();">마감하기</button>
-                        {% elif alreadyApply %}
-                        <button class="btn btn-solid" type="button" onclick="doCancel();">취소하기</button>
-                        {% else %}
-                        <button class="btn btn-solid" type="button" onclick="doApply();">참여하기</button>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                {% if replies %}
-                <table class="table table-bordered"  id="replyTable" style="text-align: center; margin-top: 1rem;">
-                    <thead>
-                        <tr>
-                            <td>
-                                작성자
-                            </td>
-                            <td>
-                                댓글
-                            </td>
-                            <td>
-                                작성일
-                            </td>
-                        </tr>
-                    </thead>
-                    {%for reply in replies%}
-                    <tbody>
-                        <tr style="vertical-align: middle;">
-                            <td>
-                                {{reply.user_id}}
-                            </td>
-                            <td>
-                                {{reply.replyContent}}
-                            </td>
-                            <td>
-                                {{reply.created_at}}
-                            </td>
-                        </tr>
-                    </tbody>
-                    {%endfor%}
-                </table>
-                {% else %}
-                <div class="alert alert-secondary" style="text-align: center; margin-top: 1rem;" role="alert">
-                    작성된 댓글이 없습니다.
-                </div>
-                {% endif %}
-    
-                <div class="editor">
-                    <label class="label">댓글</label>
-                    <textarea class="textarea editable" id="reply_content" style="min-height: 0;"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-solid" type="button" onclick="doReply();">댓글 작성</button>
-                </div>
-            </form>
-
 
         </div>
 
-    </body>
+        <!-- 폼 -->
+        <form class="form" id="info" action="/post/participate/{{post._id}}" method="post">
+            <input type="hidden" value="{{post._id}}" name="id">
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label">제목</label>
+                    <input class="input editable" name="title" type="text" value="{{post.title}}"
+                        placeholder="제목을 입력하세요." readonly>
+                </div>
+                <div class="field">
+                    <label class="label">작성자</label>
+                    <input class="input" name="author" type="text" value="{{post.author}}" readonly>
+                </div>
+                <div class="field">
+                    <label class="label">모집인원</label>
+                    <input class="input editable" name="required" type="number" value="{{post.required}}"
+                        placeholder="예: 5" readonly>
+                </div>
+                <div class="field">
+                    <label class="label">조회수</label>
+                    <input class="readonly" name="viewcount" type="text" value="{{post.viewcount}}" readonly>
+                </div>
+                <div class="field">
+                    <label class="label">마감일</label>
+                    <input class="date editable" name="closing_date" type="date" value="{{post.closing_date}}" readonly>
+                    <input class="editable" type="time" name="closing_time" value="{{post.closing_time}}" readonly>
+                </div>
+                <div class="field">
+                    <label class="label">시작일</label>
+                    <input class="date editable" name="start_date" type="date" value="{{post.start_date}}" readonly>
+                    <input class="editable" type="time" name="start_time" value="{{post.start_time}}" readonly>
+                </div>
+
+            </div>
+            <div>
+                {%if post.runningPoints%}
+                <div class="field" id="map">
+                    {{post.runningPoints}}
+                </div>
+                {%endif%}
+                {%if post.distance%}
+                <div class="field">
+                    <label class="label">러닝 거리</label>
+                    <input class="input" name="author" type="text" value="{{post.distance}}" readonly>
+                </div>
+                {%endif%}
+            </div>
+            <div>
+                {%if post.dest_lat%}
+                <div class="field" id="map1">
+                    {{post.dest_lat}}
+                    {{post.dest_lng}}
+                </div>
+                <div class="field">
+                    <label class="label">목적지</label>
+                    <input class="input" name="author" type="text" value="{{post.dest}}" readonly>
+                </div>
+                {%endif%}
+            </div>
+
+            <div>
+                {%if post.taxi_fee%}
+                <div class="field">
+                    <label class="label">택시 목적지</label>
+                    <span id="taxi_destination_text" style="display: none;">{{post.taxi_dest}}</span>
+                    <div id="map2" style="height: 300px; margin-top: 10px;"></div>
+                </div>
+                <div class="field-container">
+                    <div style="flex-grow: 1;"></div>
+                </div>
+                <div class="field">
+                    <label class="label">예상 택시비</label>
+                    <input class="input" name="author" type="text" value="{{post.taxi_fee}}원" readonly>
+                </div>
+                {%endif%}
+            </div>
+
+            <div class="editor">
+
+                <label class="label">내용</label>
+                <textarea class="textarea editable" name="content" readonly>{{post.content}}</textarea>
+            </div>
+
+            {% if participants %}
+            <table class="table table-bordered" style="text-align: center; margin-top: 1rem;">
+                <tr>
+                    <td>
+                        참여자
+                    </td>
+                    <td>
+                        참석일
+                    </td>
+                </tr>
+                {%for participant in participants%}
+                <tr style="vertical-align: middle;">
+                    <td>
+                        {{participant.user_id}}
+                    </td>
+                    <td>
+                        {{participant.participated_time}}
+                    </td>
+                </tr>
+                {%endfor%}
+            </table>
+            {% else %}
+            <div class="alert alert-secondary" style="text-align: center; margin-top: 1rem;" role="alert">
+                참여자가 없습니다.
+            </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <button class="btn btn-ghost" type="button" onclick="goMain();">목록으로</button>
+                {% if post.statu == 1 %}
+                {% if isMyPost %}
+                <button class="btn btn-solid" type="button" onclick="doUpdate();">수정하기</button>
+                <button class="btn btn-solid" type="button" onclick="doClose();">마감하기</button>
+                {% elif alreadyApply %}
+                <button class="btn btn-solid" type="button" onclick="doCancel();">취소하기</button>
+                {% else %}
+                <button class="btn btn-solid" type="button" onclick="doApply();">참여하기</button>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% if replies %}
+            <table class="table table-bordered" id="replyTable" style="text-align: center; margin-top: 1rem;">
+                <thead>
+                    <tr>
+                        <td>
+                            작성자
+                        </td>
+                        <td>
+                            댓글
+                        </td>
+                        <td>
+                            작성일
+                        </td>
+                    </tr>
+                </thead>
+                {%for reply in replies%}
+                <tbody>
+                    <tr style="vertical-align: middle;">
+                        <td>
+                            {{reply.user_id}}
+                        </td>
+                        <td>
+                            {{reply.replyContent}}
+                        </td>
+                        <td>
+                            {{reply.created_at}}
+                        </td>
+                    </tr>
+                </tbody>
+                {%endfor%}
+            </table>
+            {% else %}
+            <div class="alert alert-secondary" style="text-align: center; margin-top: 1rem;" role="alert">
+                작성된 댓글이 없습니다.
+            </div>
+            {% endif %}
+
+            <div class="editor">
+                <label class="label">댓글</label>
+                <textarea class="textarea editable" id="reply_content" style="min-height: 0;"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-solid" type="button" onclick="doReply();">댓글 작성</button>
+            </div>
+        </form>
+
+
+    </div>
+
+</body>
 
 </html>
