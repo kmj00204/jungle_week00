@@ -123,8 +123,8 @@
                     {{ post.closing_date[:10] }} {{ post.closing_date[11:] }}
                 </td>
                 <td>
-                    {% if post.participants %}
-                    {{ post.participants|length }} / {{ post.required }}
+                    {% if post.status %}
+                    {{ post.status }} / {{ post.required }}
                     {% else %}
                     0 / {{ post.required }}
                     {% endif %}
@@ -234,3 +234,4 @@
 </body>
 
 </html>
+
