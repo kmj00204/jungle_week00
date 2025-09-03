@@ -263,6 +263,8 @@
         </style>
 
         <script>
+            var rects = [];
+
             // 카테고리 selectBox 선택시 화면 유형 전환        
             $(function(){
                 $(".category").hide();  // 진입시 초기화면은 기타카테고리
@@ -295,7 +297,7 @@
                 const $overlay = $('#overlay');
                 let mode = 'idle';              // 'idle' | 'draw' | 'select'
                 let drawing = false, start = {x:0, y:0};
-                let $current = null, rects = [], selectedId = null, autoId = 0;
+                let $current = null,  selectedId = null, autoId = 0;
 
                 function setMode(next) {
                     mode = next;
@@ -367,7 +369,7 @@
                 function clearSelection(){ selectedId=null; $overlay.find('.rect').removeClass('selected'); }
                 function cancelCurrentDrawing(){ drawing=false; if($current){$current.remove(); $current=null;} }
 
-                // 삭제/초기화/저장
+                // 삭제/초기화
                 $('#btnDelete').on('click', function(){
                     if (!selectedId) return;
                     $overlay.find(`.rect`).each(function(){ if($(this).data('id')===selectedId) $(this).remove(); });
@@ -375,15 +377,6 @@
                 });
                 $('#btnClear').on('click', function(){
                     rects=[]; $overlay.find('.rect').remove(); clearSelection(); cancelCurrentDrawing(); setMode('idle');
-                });
-                $('#btnSave').on('click', async function(){
-                    const W = $overlay.width(), H = $overlay.height();
-                    const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
-                    const res = await fetch('/zones', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ imageId:'krafton_campus_v1', type:'rect', shapes:normalized })
-                    }).catch(()=>null);
-                    alert(res ? '저장 시도(응답 확인 필요)' : '요청 실패');
                 });
 
                 // 단축키
@@ -483,7 +476,7 @@
                     const el = $firstInvalid[0];
                     el.scrollIntoView({behavior:'smooth', block:'center'});
                     $firstInvalid.focus();
-                    return false; // ❌ 제출하지 않음
+                    return false; 
                 }
                 return true;
             }
@@ -491,6 +484,9 @@
             function doPost(){
                 const form = document.getElementById("info");
                 const categoryVal = $("#categorySelect").val();
+
+                const facilityVal = $("#facility").val();
+                const facilityDetailVal = $("#facilityDetail").val();
 
                 // 유효성 검사 method
                 if(!checkValid(categoryVal)){
@@ -502,6 +498,19 @@
                 hidden.name = "category";
                 hidden.value = categoryVal;
                 form.appendChild(hidden);
+
+                const facility = document.createElement("input");
+                facility.type = "hidden";
+                facility.name = "facility";
+                facility.value = facilityVal;
+                form.appendChild(facility);
+
+                const facilityDetail = document.createElement("input");
+                facilityDetail.type = "hidden";
+                facilityDetail.name = "facilityDetail";
+                facilityDetail.value = facilityDetailVal;
+                form.appendChild(facilityDetail);
+
 
                 if(categoryVal == '시설이용'){     // 시설이용 : 공간 좌표, 카테고리, 카테고리 상세
                     const facility = $("#facility").val();
@@ -517,9 +526,10 @@
                     hidden.type = "hidden";
                     hidden.name = "rect";
 
+                    const $overlay = $('#overlay');
                     const W = $overlay.width(), H = $overlay.height();
                     const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
-                    hidden.value = normalized;
+                    hidden.value = JSON.stringify(normalized);
                     form.appendChild(rect);
 
                     if(facility == '교육장' || facility == '회의실'){
@@ -582,7 +592,6 @@
                         <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
                         <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
                         <button id="btnClear" class="btn btn-primary">전체 삭제</button>
-                        <button id="btnSave" class="btn btn-primary">저장</button>
                     </div>
                     <div class="toolbar">
                          <select class="select" id="facility" style="width: 100%;">
