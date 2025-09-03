@@ -1,17 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
-from pymongo import MongoClient
-from datetime import datetime
+from pymongo import MongoClient, ReturnDocument
+import datetime
 from zoneinfo import ZoneInfo
 import bcrypt
 import os
 from werkzeug.utils import secure_filename
 from bson import ObjectId
+import json
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
 
-# client = MongoClient('localhost', 27017)
-client = MongoClient("mongodb://test:1234@localhost:27017/")
+client = MongoClient('localhost', 27017)
 db = client.simple_board_db
 posts_collection = db.posts
 participants_collection = db.participant
@@ -76,44 +76,80 @@ def login():
 
 @app.route("/mypage", methods=["GET"])
 def mypage():
+    per_page = 3
     # 내가 작성한 글
-    myPosts = list(db.posts.find({"author": session["user"]}))
+    allMyPosts = list(db.posts.find({"author" : session["user"]}))
 
-    page = int(request.args.get("page", 1))
+    # 페이징
+    page_myPosts = int(request.args.get("page_myPosts", 1))
+    
+    # 페이징 고려해 목록 추출
+    myPosts = list(
+        db.posts.find({"author" : session["user"]})
+        .skip((page_myPosts - 1) * per_page)
+        .limit(per_page)
+    )
 
-    per_page = 10
-
-    total_posts = len(myPosts)
-    total_pages = (total_posts + per_page - 1) // per_page
-
-    # 현재 요청 쿼리 복사 (딕셔너리 형태로)
-    query_params = request.args.to_dict()
-    query_params.pop("page", None)  # 기존 페이지 제거
+    total_posts_myPosts = len(allMyPosts)
+    total_pages_myPosts = (total_posts_myPosts + per_page - 1) // per_page
 
     # 내가 참석한 글
     # 참석자 테이블에서 post의 id목록 조회 -> 조회한 post id로 post목록 조회
     # 1. participant에서 post_id 목록 조회
     post_ids = participants_collection.find(
-        {"user_id": session["user"]}, {"post_id": 1, "_id": 0}
+        {"user_id": session["user"]},
+        {"post_id": 1, "_id": 0}
     )
     post_ids = [p["post_id"] for p in post_ids]
 
     # 타입 맞추기: posts._id가 ObjectId라면 문자열을 ObjectId로 변환
     post_ids = [
-        ObjectId(x) if isinstance(x, str) else x for x in post_ids if x is not None
+        ObjectId(x) if isinstance(x, str) else x
+        for x in post_ids
+        if x is not None
     ]
 
     # 2. posts 테이블에서 해당 post 목록 조회
-    applyPosts = list(db.posts.find({"_id": {"$in": post_ids}}))
+    allApplyPosts = list(db.posts.find({"_id": {"$in": post_ids}}))
 
-    return render_template(
-        "mypage.html",
-        myPosts=myPosts,
-        page=page,
-        total_pages=total_pages,
-        query_params=query_params,
-        applyPosts=applyPosts,
+
+    # 페이징
+    page_applyPosts = int(request.args.get("page_applyPosts", 1))
+    #per_page = 10
+
+    # 페이징 고려해 목록 추출
+    applyPosts = list(
+        db.posts.find({"_id": {"$in": post_ids}})
+        .skip((page_applyPosts - 1) * per_page)
+        .limit(per_page)
     )
+
+    total_posts_applyPosts = len(allApplyPosts)
+    total_pages_applyPosts = (total_posts_applyPosts + per_page - 1) // per_page
+
+    # 현재 요청 쿼리 복사 (딕셔너리 형태로)
+    query_params = request.args.to_dict()
+    query_params.pop("page", None)  # 기존 페이지 제거
+
+    
+    # AJAX(부분 요청) 여부: fetch에서 보낸 헤더로 구분
+    is_partial = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    ctx = dict(
+        myPosts=myPosts,
+        page_myPosts=page_myPosts,
+        total_pages_myPosts=total_pages_myPosts,
+        applyPosts=applyPosts,
+        page_applyPosts=page_applyPosts,
+        total_pages_applyPosts=total_pages_applyPosts,
+        query_params=query_params
+    )
+
+    if is_partial:
+        return render_template("partials/_apply_wrap.html", **ctx)  # 조각만 반환
+
+    return render_template("mypage.html", myPosts=myPosts, per_page=per_page, page_myPosts=page_myPosts, total_pages_myPosts=total_pages_myPosts, 
+                          page_applyPosts=page_applyPosts, total_pages_applyPosts=total_pages_applyPosts , query_params=query_params, applyPosts=applyPosts)
 
 
 @app.route("/join", methods=["GET", "POST"])
@@ -217,27 +253,26 @@ def post(id):
     replies = list(reply_collection.find({"post_id": id}))
 
     # 본인 글 여부
-    isMyPost = (
-        db.posts.find_one({"_id": ObjectId(id), "author": session["user"]}, {"_id": 1})
-        is not None
-    )
+    isMyPost = db.posts.find_one(
+    {"_id": ObjectId(id), "author": session["user"]},
+    {"_id": 1}
+    ) is not None
 
     # 신청이력
-    alreadyApply = (
-        participants_collection.find_one(
-            {"post_id": id, "user_id": session["user"]}, {"_id": 1}
-        )
-        is not None
-    )
+    alreadyApply = participants_collection.find_one(
+    {"post_id": id, "user_id": session["user"]},
+    {"_id": 1}
+    ) is not None
 
-    return render_template(
-        "postDetail.html",
-        post=post,
-        isMyPost=isMyPost,
-        alreadyApply=alreadyApply,
-        participants=participants,
-        replies=replies,
-    )
+    shapes_json = ''
+
+    if(post.get('category') == '시설이용'):
+        doc = posts_collection.find_one({"_id": ObjectId(id)}, {'rect' : 1, '_id' : 0})
+        rect_value = (doc or {}).get('rect', '[]')
+        shapes = json.loads(rect_value)   # ← 중요
+        shapes_json = json.dumps(shapes) # 문자열로 변환
+
+    return render_template("postDetail.html", msg=request.args.get("msg"), post=post, isMyPost=isMyPost , alreadyApply=alreadyApply, participants=participants, replies=replies, shapes_json=shapes_json)
 
 
 @app.route("/post/new", methods=["GET", "POST"])
@@ -269,23 +304,39 @@ def new_post():
         # facility = request.form.get("facility")
         # facilityDetail = request.form.get("facilityDetail")
 
+        # if(category == "시설정보"):
+        facility = request.form.get("facility")
+        facilityDetail = request.form.get("facilityDetail")
+
+        # 좌표정보 저장
+        rect = request.form.get("rect")
+
+        # elif(category == "기타"):
+        picture = request.files.get("picture")
+        picture_url = None
+        
+        if picture:
+            filename = secure_filename(picture.filename)
+            picture.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            picture_url = "/static/uploads/{filename}"  # 정적 경로로 접근 가능하도록
+
         post = {
             "title": title,
-            # "picture": picture_url,
             "author": author,
             "viewcount": viewcount,
             "required": required,
             "status": status,
             "category": category,
             "statu": 1,
-            "closing_date": closing_date,
-            "closing_time": closing_time,
-            "start_date": start_date,
-            "start_time": start_time,
-            "content": content,
-            "created_at": datetime.utcnow(),
-            # "facility" : facility,
-            # "facilityDetail" : facilityDetail
+            "closing_date" : closing_date,
+            "closing_time" : closing_time,
+            "start_date" : start_date,
+            "start_time" : start_time,
+            "content" : content,
+            "facility" : facility,
+            "facilityDetail" : facilityDetail,
+            "rect" : rect,
+            "picture": picture_url
         }
         posts_collection.insert_one(post)
         return redirect("/")
@@ -303,26 +354,87 @@ def participate(id):
         return "게시글을 찾을 수 없습니다.", 404
 
     # 참석한 적 있는지
-    alreadyApply = (
-        db.participants.find_one({"post_id": id, "user_id": userid}, {"_id": 1})
-        is not None
-    )
+    alreadyApply = db.participants.find_one(
+    {"post_id": id, "user_id": userid},
+    {"_id": 1}
+    ) is not None
 
     if alreadyApply:
         return redirect(url_for("post", id=id, msg="already"))
     else:
-        # posts_collection.update_one(
-        #     {"_id": ObjectId(id)}, {"$push": {"participants": userid}}
-        # )
-        participants_collection.insert_one(
-            {
-                "user_id": userid,
-                "post_id": id,
-                "participated_time": datetime.now(ZoneInfo("Asia/Seoul")),
-            }
-        )
-        return redirect(url_for("mypage"))
+        TZ = "Asia/Seoul"
+        res = posts_collection.find_one_and_update(
+        {
+        "_id": ObjectId(id),
+        "$expr": {
+            "$and": [
+                # 1) 마감 전이어야 한다: close_date + close_time > NOW
+                {
+                    "$gt": [
+                        {
+                            "$dateFromString": {
+                                "dateString": {
+                                    # "YYYY-MM-DD HH:mm"로 합쳐서 파싱
+                                    "$concat": [
+                                        { "$ifNull": ["$closing_date", "9999-12-31"] },
+                                        " ",
+                                        { "$ifNull": ["$closing_time", "23:59"] }
+                                    ]
+                                },
+                                "format": "%Y-%m-%d %H:%M",
+                                "timezone": TZ
+                            }
+                        },
+                        # 비교 기준 NOW (분 단위로 잘라서 미세초 차이 방지)
+                        { "$dateTrunc": { "date": "$$NOW", "unit": "minute", "timezone": TZ } }
+                    ]
+                },
 
+                # 2) 좌석 조건: required - status > 0
+                {
+                    "$gt": [
+                        {
+                            "$subtract": [
+                                { "$toInt": { "$ifNull": ["$required", 0] } },
+                                { "$toInt": { "$ifNull": ["$status",   0] } }
+                            ]
+                        },
+                        0
+                    ]
+                }
+            ]
+        },
+            # 3) (선택) 동일 유저 중복 방지
+            "applicants": { "$ne": userid }
+        },
+            {
+                "$inc": {"status" : 1}
+            },
+            return_document=ReturnDocument.AFTER            
+        )
+        
+        if res is not None :
+            participants_collection.insert_one({
+                "user_id" : userid,
+                "post_id" : id,
+                "participated_time" : datetime.now(ZoneInfo("Asia/Seoul"))
+            })
+            return redirect(url_for("mypage"))  
+        else :
+            doc = posts_collection.find_one({"_id": ObjectId(id)}, {"required":1, "status":1, "closing_date":1, "closing_time":1})
+            close_date_str = doc.get("closing_date")
+            close_time_str = doc.get("closing_time")
+
+            close_datetime = datetime.datetime.strptime(f"{close_date_str} {close_time_str}", "%Y-%m-%d %H:%M")
+
+            if datetime.datetime.now() > close_datetime:
+                msg = "모집 기간이 지났습니다."
+                return redirect(url_for("post", id=id, msg=msg))
+            
+            req = int(doc.get("required", 0)) if doc else 0
+            stat = int(doc.get("status", 0))   if doc else 0
+            msg = "모집인원이 다 찼습니다" if (req - stat) <= 0 else "오류가 발생했습니다. 개발자에게 문의주세요"  
+            return redirect(url_for("post", id=id, msg=msg))
 
 @app.route("/post/cancel/<id>", methods=["POST"])
 def cancel_post(id):
@@ -335,67 +447,60 @@ def cancel_post(id):
         return "게시글을 찾을 수 없습니다.", 404
 
     # 참석한 적 있는지
-    alreadyApply = (
-        db.participants.find_one({"post_id": id, "user_id": userid}, {"_id": 1})
-        is not None
-    )
+    alreadyApply = db.participants.find_one(
+    {"post_id": id, "user_id": userid},
+    {"_id": 1}
+    ) is not None
 
     if not alreadyApply:
-        result = participants_collection.delete_one({"post_id": id, "user_id": userid})
+        posts_collection.update_one({"_id": ObjectId(id)}, {"$inc": {"status": -1}})
+
+        result = participants_collection.delete_one({
+            "post_id" : id,
+            "user_id" : userid
+        })
         if result.deleted_count == 1:
             return redirect(url_for("mypage"))
         else:
-            return "신청 중 에러 발생.", 404
+            return  "신청 중 에러 발생.", 404
     else:
         return jsonify({"result": "fail", "msg": "참여 이력을 찾을 수 없습니다."})
-
-
+        
 @app.route("/post/close/<id>", methods=["POST"])
 def close_post(id):
     result = posts_collection.update_one({"_id": ObjectId(id)}, {"$set": {"statu": 0}})
-    if result.modified_count > 0:
+    if result.modified_count > 0 :
         return redirect(url_for("mypage"))
-    else:
+    else :
         "마감 중 에러 발생.", 404
 
 
 @app.route("/post/update/<id>", methods=["POST"])
 def update_post(id):
-    result = posts_collection.update_one(
-        {"_id": ObjectId(id)},
-        {
-            "$set": {
-                "title": request.form.get("title"),
-                "required": request.form.get("required"),
-                "category": request.form.get("category"),
-                "content": request.form.get("content"),
-                "closing_date": request.form.get("closing_date"),
-                "closing_time": request.form.get("closing_time"),
-                "start_date": request.form.get("start_date"),
-                "start_time": request.form.get("start_time"),
-            }
-        },
-    )
-
-    if result.modified_count > 0:
+    result = posts_collection.update_one({"_id": ObjectId(id)}, {"$set": {
+                                                                    "title": request.form.get("title"),
+                                                                    "required" : request.form.get("required"),
+                                                                    "category" : request.form.get("category"),
+                                                                    "content" : request.form.get("content"),
+                                                                    "closing_date" : request.form.get("closing_date"),
+                                                                    "closing_time" : request.form.get("closing_time"),
+                                                                    "start_date" : request.form.get("start_date"),
+                                                                    "start_time" : request.form.get("start_time"),
+                                                                    "rect" : request.form.get("rect")
+                                                                }})
+    
+    if result.modified_count > 0 :
         return redirect(url_for("mypage"))
-    else:
+    else :
         "마감 중 에러 발생.", 404
-
 
 @app.route("/ajax/reply", methods=["POST"])
 def insert_reply():
     data = request.get_json()
-    reply_collection.insert_one(
-        {
-            "post_id": data["postId"],
-            "user_id": data["userId"],
-            "replyContent": data["replyContent"],
-            "created_at": data["created_at"],
-        }
-    )
-
+    reply_collection.insert_one({"post_id": data["postId"], "user_id": data["userId"], "replyContent": data["replyContent"], "created_at": data["created_at"]})
+    
     return jsonify(ok=True, data=data)
+
 
 
 @app.route("/post/delete", methods=["POST"])
