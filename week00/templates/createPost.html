@@ -1,0 +1,653 @@
+<!Doctype html>
+<html lang="ko">
+
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+		<!-- JS -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+            crossorigin="anonymous"></script>
+
+        <!-- 구글폰트 -->
+        <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+
+
+        <title>모집글 상세</title>
+
+        <!-- style -->
+        <style type="text/css">
+            :root{
+                --bg:#f6f7fb;
+                --panel:#ffffff;
+                --border:#e6e8ee;
+                --text:#111827;
+                --muted:#6b7280;
+                --primary:#3b82f6;
+                --primary-600:#2563eb;
+                --danger:#ef4444;
+                --danger-600:#dc2626;
+                --accent:#6366f1;
+                --shadow:0 6px 24px rgba(20,26,38,0.06);
+                --radius:14px;
+                --radius-sm:10px;
+                --ring:0 0 0 4px rgba(59,130,246,0.14);
+            }
+
+            * {
+                /* font-family: "Stylish", sans-serif; */
+                /* margin: 0 1rem 0 1rem; */
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Pretendard, Apple SD Gothic Neo, Arial, sans-serif;
+            }
+
+            /* 컨테이너 */
+            .app {
+                max-width: 1160px;
+                margin: 40px auto;
+                padding: 24px;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+            }
+
+            /* 메인 2열 레이아웃 */
+            .main-grid{
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 20px;
+            }
+
+            /* 좌측 : 그림 영역 */
+            .card {
+                background: #fff;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                box-shadow: var(--shadow);
+            }
+            .preview-card{padding:16px}
+
+            .preview-box{
+            border:2px dashed #d1d5db;
+            border-radius:12px;
+            height:380px; /* 필요 시 조정 */
+            background:repeating-linear-gradient(
+                        45deg, #fafafa, #fafafa 10px, #f5f7fb 10px, #f5f7fb 20px);
+            display:flex;align-items:center;justify-content:center;
+            color:#9ca3af;font-weight:700;letter-spacing:.05em;
+            user-select:none;
+            }
+
+            /* 우측: 파일 목록 */
+            .list-card{padding:16px; display:flex; flex-direction:column; min-height:380px}
+
+            .section-title{
+            margin:0 0 12px;
+            font-size:15px;
+            font-weight:700;
+            }
+
+            .file-list{
+            list-style:none;margin:0;padding:0;
+            border:1px solid var(--border);
+            border-radius:10px;
+            overflow:hidden;
+            background:#fff;
+            max-height:260px;
+            overflow-y:auto;
+            }
+            .file-item{
+            display:flex;align-items:center;gap:10px;
+            padding:10px 12px;border-bottom:1px solid var(--border);
+            font-size:14px;color:#1f2937;
+            }
+            .file-item:last-child{border-bottom:none}
+            .file-item input[type="checkbox"]{width:16px;height:16px}
+
+            .list-actions{
+            display:flex;gap:10px;margin-top:12px;
+            }
+
+            .page-scope .btn{
+            appearance:none;border:1px solid var(--border);background:#fff;
+            color:#111827;padding:9px 12px;border-radius:10px;
+            cursor:pointer;font-weight:600;
+            transition:box-shadow .15s ease, transform .06s ease, border-color .15s ease;
+            }
+            .page-scope .btn:hover{border-color:#cbd5e1; box-shadow:var(--ring)}
+            .page-scope .btn:active{transform:translateY(1px)}
+
+            .page-scope .btn-primary{
+            background:var(--primary);
+            border-color:transparent;
+            color:#fff;
+            }
+            .page-scope .btn-primary:hover{box-shadow:var(--ring); background:var(--primary-600)}
+
+            .btn-danger{
+            background:#fff;
+            color:var(--danger);
+            border-color:#ffd2d2;
+            }
+            .btn-danger:hover{border-color:#ffb4b4; box-shadow:0 0 0 4px rgba(239,68,68,.12)}
+            .btn-danger:active{background:#fff5f5}
+
+            /* -------------------------------------------------
+            폼 영역
+            ------------------------------------------------- */
+            .form{
+            margin-top:20px;
+            padding:16px;
+            background:#fff;
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            box-shadow:var(--shadow);
+            }
+
+            .form-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px 20px;
+            }
+
+            .field{display:flex; /*flex-direction:column;*/ gap:8px}
+
+            .label{
+            width: 15%;
+            font-size:13px; color:var(--muted); font-weight:700;
+            display: flex;
+            flex-direction:column;
+            justify-content: center;
+            }
+
+            .input, .select, .date, .readonly{
+            width:60%;
+            padding:11px 12px;
+            border:1px solid var(--border);
+            border-radius:10px;
+            background:#fff;
+            color:#111827;
+            outline:none;
+            transition:border-color .15s ease, box-shadow .15s ease;
+            }
+            .input:focus, .select:focus, .date:focus{
+            border-color:#c4d3ff; box-shadow:var(--ring);
+            }
+            .readonly{
+            background:#fafafa; color:#6b7280;
+            }
+
+            /* 텍스트 영역 */
+            .editor{
+            margin-top:16px;
+            display:flex; flex-direction:column; gap:8px;
+            }
+            .textarea{
+            width:100%;
+            min-height:260px;
+            resize:vertical;
+            padding:12px 14px;
+            border:1px solid var(--border);
+            border-radius:12px;
+            background:#fff;
+            outline:none;
+            transition:border-color .15s ease, box-shadow .15s ease;
+            }
+            .textarea::placeholder{color:#9da3ae}
+            .textarea:focus{border-color:#c4d3ff; box-shadow:var(--ring)}
+
+            /* 하단 버튼 */
+            .form-actions{
+            margin-top:16px;
+            display:flex; justify-content:flex-end; gap:10px;
+            }
+
+            .btn-ghost{
+            background:#fff; border:1px solid var(--border); color:#111827;
+            }
+            .btn-ghost:hover{border-color:#cbd5e1; box-shadow:var(--ring)}
+
+            .btn-solid{
+            background:var(--accent); color:#fff; border:1px solid transparent;
+            }
+            .btn-solid:hover{background:#5558e6; box-shadow:var(--ring)}
+
+            /* 이미지에 도형그리기 */
+            #wrap { position: relative; display: inline-block; }
+            #mapImg { display:block; max-width:100%; height:auto; user-select:none; }
+
+            .container {
+                display: flex;
+                align-items: flex-start; /* 위쪽 맞춤 */
+                gap: 20px;               /* 이미지와 버튼 사이 간격 */
+            }
+
+            /* 오버레이를 CSS로 이미지 위에 '가득' 덮기: inset:0로 JS 사이즈 의존 제거 */
+            #overlay {
+            position: absolute; inset: 0;
+            z-index: 5; pointer-events: auto; cursor: default;
+            }
+            .rect {
+            position: absolute;
+            border: 2px solid rgb(170, 0, 113);
+            background: rgba(196, 9, 140, 0.705);
+            box-sizing: border-box;
+            }
+            .rect.selected { border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.35); }
+            .toolbar { margin:10px 0; display:flex; gap:8px; justify-content: flex-end; flex-direction: column;}
+            .toolbar button { padding:6px 10px; }
+
+            /* 유효성 검사 css */
+            .is-invalid {
+                border-color: #ef4444 !important;
+                box-shadow: 0 0 0 3px rgba(239,68,68,.15) !important;
+            }
+                .invalid-msg {
+                margin-top: 6px;
+                font-size: 12px;
+                color: #ef4444;
+            }
+
+        </style>
+
+        <script>
+            // 카테고리 selectBox 선택시 화면 유형 전환        
+            $(function(){
+                $(".category").hide();  // 진입시 초기화면은 기타카테고리
+
+                $("#categorySelect").on("change", function(){
+                    const selectValue = $(this).val();
+                    $(".category").hide();
+                    if(selectValue == '시설이용'){
+                        $("#1").show();
+                    }
+                });
+                
+                $('#facility').on("change", function(){
+                    selectValue = $(this).val();
+                    if(selectValue == '교육장' || selectValue == '회의실'){
+                        $("#facilityDetail").show();
+                    } else {
+                        $("#facilityDetail").hide();
+                    }
+                })
+                
+
+                /* 유효성 검사 */
+                // 입력 변경 시 에러 해제
+                $('#info').on('input change', 'input, textarea, select', function(){ clearError($(this)); });
+                $('#facility').on('change', function(){ clearError($(this)); });
+                
+                
+                /* 시설이용 - 이미지에 도형 그리기 */
+                const $overlay = $('#overlay');
+                let mode = 'idle';              // 'idle' | 'draw' | 'select'
+                let drawing = false, start = {x:0, y:0};
+                let $current = null, rects = [], selectedId = null, autoId = 0;
+
+                function setMode(next) {
+                    mode = next;
+                    if (mode === 'draw') {
+                    $('#btnDraw').text('그리기 종료 (Esc)');
+                    $overlay.css('cursor','crosshair');
+                    } else {
+                    $('#btnDraw').text('영역(사각형) 표시');
+                    $overlay.css('cursor','default');
+                    cancelCurrentDrawing();
+                    }
+                    clearSelection();
+                }
+                $('#btnDraw').on('click', ()=> setMode(mode==='draw'?'idle':'draw'));
+
+                // overlay 기준 상대좌표(스크롤 안전)
+                function relPos(e){
+                    const off = $overlay.offset();
+                    return { x: e.pageX - off.left, y: e.pageY - off.top };
+                }
+
+                // 드로잉
+                $overlay.on('mousedown', function(e){
+                    if (mode !== 'draw') return;
+                    drawing = true;
+                    start = relPos(e);
+                    $current = $('<div class="rect"></div>').css({
+                    left:start.x, top:start.y, width:0, height:0
+                    }).appendTo($overlay);
+                    $current.data('id', (++autoId).toString());
+                });
+
+                $(document).on('mousemove', function(e){
+                    if (!drawing || !$current) return;
+                    const p = relPos(e);
+                    const x = Math.min(p.x, start.x);
+                    const y = Math.min(p.y, start.y);
+                    const w = Math.abs(p.x - start.x);
+                    const h = Math.abs(p.y - start.y);
+                    $current.css({ left:x, top:y, width:w, height:h });
+                });
+
+                $(document).on('mouseup', function(){
+                    if (!drawing || !$current) return;
+                    drawing = false;
+
+                    const x = parseFloat($current.css('left'));
+                    const y = parseFloat($current.css('top'));
+                    const w = parseFloat($current.css('width'));
+                    const h = parseFloat($current.css('height'));
+                    if (w < 3 || h < 3) { $current.remove(); $current = null; return; }
+
+                    rects.push({ id:$current.data('id'), x, y, w, h });
+                    $current = null;
+                });
+
+                // 선택/해제
+                $overlay.on('click', '.rect', function(e){
+                    if (mode === 'draw') return;
+                    e.stopPropagation();
+                    const $r = $(this), id = $r.data('id');
+                    if (selectedId === id) { clearSelection(); return; }
+                    clearSelection(); selectedId = id; $r.addClass('selected'); mode='select';
+                });
+                $overlay.on('click', function(e){
+                    if ($(e.target).hasClass('rect')) return;
+                    clearSelection(); if (mode==='select') mode='idle';
+                });
+                function clearSelection(){ selectedId=null; $overlay.find('.rect').removeClass('selected'); }
+                function cancelCurrentDrawing(){ drawing=false; if($current){$current.remove(); $current=null;} }
+
+                // 삭제/초기화/저장
+                $('#btnDelete').on('click', function(){
+                    if (!selectedId) return;
+                    $overlay.find(`.rect`).each(function(){ if($(this).data('id')===selectedId) $(this).remove(); });
+                    rects = rects.filter(r=>r.id!==selectedId); clearSelection(); mode='idle';
+                });
+                $('#btnClear').on('click', function(){
+                    rects=[]; $overlay.find('.rect').remove(); clearSelection(); cancelCurrentDrawing(); setMode('idle');
+                });
+                $('#btnSave').on('click', async function(){
+                    const W = $overlay.width(), H = $overlay.height();
+                    const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
+                    const res = await fetch('/zones', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ imageId:'krafton_campus_v1', type:'rect', shapes:normalized })
+                    }).catch(()=>null);
+                    alert(res ? '저장 시도(응답 확인 필요)' : '요청 실패');
+                });
+
+                // 단축키
+                $(window).on('keydown', function(e){
+                    const k = e.key.toLowerCase();
+                    if (k==='escape'){ if(drawing){cancelCurrentDrawing();return;} if(selectedId){clearSelection();return;} setMode('idle'); }
+                    if (k==='delete' || k==='backspace'){ $('#btnDelete').click(); }
+                    if (k==='d'){ $('#btnDraw').click(); }
+                });
+
+                
+            });
+
+            function showError($el, msg){
+                $el.addClass('is-invalid');
+                const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
+                if($wrap.find('.invalid-msg').length===0){
+                $('<div class="invalid-msg"></div>').text(msg).appendTo($wrap);
+                }else{
+                $wrap.find('.invalid-msg').text(msg);
+                }
+            }
+            function clearError($el){
+                $el.removeClass('is-invalid');
+                const $wrap = $el.closest('.field').length ? $el.closest('.field') : $el.parent();
+                $wrap.find('.invalid-msg').remove();
+            }
+            
+
+
+            function checkValid(categoryVal){
+                const $form = $('#info');   
+
+                // ✅ 사용자가 #info 버튼을 눌렀을 때 유효성 검사 실행
+                let ok = true, $firstInvalid = null;
+
+                const $title = $form.find('input[name="title"]');
+                if(!$title.val() || !$title.val().trim()){
+                    ok=false; showError($title,'제목을 입력해 주세요.'); if(!$firstInvalid) $firstInvalid=$title;
+                } else clearError($title);
+
+                const $required = $form.find('input[name="required"]');
+                if(!$required.val() || !$required.val().trim()){
+                    ok=false; showError($required,'모집인원을 입력해 주세요.'); if(!$firstInvalid) $firstInvalid=$required;
+                } else clearError($required);
+
+                const $closing_date = $form.find('input[name="closing_date"]');
+                const closeDateOk = /^\d{4}-\d{2}-\d{2}$/.test($closing_date.val()||'');
+                if(!closeDateOk){
+                    ok=false; showError($closing_date,'마감일을 선택해 주세요.'); if(!$firstInvalid) $firstInvalid=$closing_date;
+                } else clearError($closing_date);
+
+                const $closing_time = $form.find('input[name="closing_time"]');
+                // 정규식: 00:00 ~ 23:59 까지 허용
+                const closeTimeOk = /^([01]\d|2[0-3]):([0-5]\d)$/.test($closing_time.val() || '');
+
+                if (!closeTimeOk) {
+                    ok = false;
+                    showError($closing_time, '마감 시간을 입력해 주세요.');
+                    if (!$firstInvalid) $firstInvalid = $closing_time;
+                } else {
+                    clearError($closing_time);
+                }
+
+                const $start_date = $form.find('input[name="start_date"]');
+                const dateOk = /^\d{4}-\d{2}-\d{2}$/.test($start_date.val()||'');
+                if(!dateOk){
+                    ok=false; showError($start_date,'시작일을 선택해 주세요.'); if(!$firstInvalid) $firstInvalid=$start_date;
+                } else clearError($start_date);
+
+                const $start_time = $form.find('input[name="start_time"]');
+                // 정규식: 00:00 ~ 23:59 까지 허용
+                const timeOk = /^([01]\d|2[0-3]):([0-5]\d)$/.test($start_time.val() || '');
+
+                if (!timeOk) {
+                    ok = false;
+                    showError($start_time, '시작 시간을 입력해 주세요.');
+                    if (!$firstInvalid) $firstInvalid = $start_time;
+                } else {
+                    clearError($start_time);
+                }
+                
+                const $content = $form.find('textarea[name="content"]');
+                if(!$content.val() || !$content.val().trim()){
+                ok=false; showError($content,'내용을 입력해 주세요.'); if(!$firstInvalid) $firstInvalid=$content;
+                } else clearError($content);
+
+                /* 카테고리별 검사 다르게 */
+                if(categoryVal == '시설이용'){
+                    const $facility = $('#facility');
+                    if($facility.val() == '0'){
+                        ok=false; showError($facility,'시설물을 선택해 주세요.'); if(!$firstInvalid) $firstInvalid=$facility;
+                    } else clearError($facility);
+                }
+
+                if(!ok){
+                    const el = $firstInvalid[0];
+                    el.scrollIntoView({behavior:'smooth', block:'center'});
+                    $firstInvalid.focus();
+                    return false; // ❌ 제출하지 않음
+                }
+                return true;
+            }
+
+            function doPost(){
+                const form = document.getElementById("info");
+                const categoryVal = $("#categorySelect").val();
+
+                // 유효성 검사 method
+                if(!checkValid(categoryVal)){
+                    return false;
+                };
+
+                const hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "category";
+                hidden.value = categoryVal;
+                form.appendChild(hidden);
+
+                if(categoryVal == '시설이용'){     // 시설이용 : 공간 좌표, 카테고리, 카테고리 상세
+                    const facility = $("#facility").val();
+
+                    const hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "facility";
+                    hidden.value = facility;
+                    form.appendChild(hidden);
+
+                    // 이미지 도형 좌표값
+                    const rect = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "rect";
+
+                    const W = $overlay.width(), H = $overlay.height();
+                    const normalized = rects.map(r=>({ id:r.id, x:r.x/W, y:r.y/H, w:r.w/W, h:r.h/H }));
+                    hidden.value = normalized;
+                    form.appendChild(rect);
+
+                    if(facility == '교육장' || facility == '회의실'){
+                        const hidden = document.createElement("input");
+                        hidden.type = "hidden";
+                        hidden.name = "facilityDetail";
+                        hidden.value = facilityDetail;
+                        form.appendChild(hidden);                 
+                    }
+                }
+                form.submit();
+            }
+
+            function goMain(){
+                location.href = '/';
+            }
+
+        </script>
+
+
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container-fluid">
+                <div class="mx-auto">
+                    <a class="navbar-brand" href="/">WithMe</a>
+                </div>
+                <div class="d-flex">
+                    <a class="btn btn-outline-light me-2" href="/post/new">새 글 작성</a>
+                    <a class="btn btn-outline-light me-2" href="/mypage">마이페이지</a>
+                    <a class="btn btn-outline-light" href="/logout">로그아웃</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="app page-scope">
+            <div class="field" style="margin-bottom: 5%;">
+                <label class="label">카테고리</label>
+                <select class="select" id="categorySelect">
+                    <option>기타</option>
+                    <option>시설이용</option>
+                    <option>러닝/산책</option>
+                    <option>배달</option>
+                    <option>외출</option>
+                    <option>택시</option>
+                </select>
+            </div>
+
+            <div class="category" id="1">
+                <!-- 좌측 : 그림 -->
+                <div class="container">
+                    <div id="wrap" style="position:relative; display:inline-block; max-width: 50%;">
+                        <img id="mapImg" src="{{ url_for('static', filename='campus_map.png') }}" draggable="false" style="display: block; user-select: none;" alt="campus map">
+                        <div id="overlay" style="position:absolute; left:0; top:0; z-index: 5; pointer-events:auto;"></div>
+                    </div>
+
+                <!-- 우측: 버튼목록 -->
+                    <div class="toolbar">
+                        <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
+                        <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
+                        <button id="btnClear" class="btn btn-primary">전체 삭제</button>
+                        <button id="btnSave" class="btn btn-primary">저장</button>
+                    </div>
+                    <div class="toolbar">
+                         <select class="select" id="facility" style="width: 100%;">
+                            <option value="0">시설물 선택</option>
+                            <option>정글스테이지</option>
+                            <option>카페테리아</option>
+                            <option>편의점</option>
+                            <option>택배보관소</option>
+                            <option>헬스장</option>
+                            <option>세탁실</option>
+                            <option>교육장</option>
+                            <option>회의실</option>
+                        </select>
+                        <input id="facilityDetail" class="input" type="text" placeholder="상세정보" style="width: 100%; display: none;">
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <!-- 폼 -->
+            <form class="form" id="info" action="/post/new" method="post">
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="label">제목</label>
+                        <input class="input" name="title" type="text" placeholder="제목을 입력하세요.">
+                    </div>
+                    <div class="field">
+                        <label class="label">작성자</label>
+                        <input class="input" name="author" type="text" value="{{ session['user'] }}" readonly>
+                    </div>
+                    <div class="field">
+                        <label class="label">모집인원</label>
+                        <input class="input" name="required" type="number" min="0" placeholder="예: 5">
+                    </div>
+                    <div class="field">
+                        <label class="label">조회수</label>
+                        <input class="readonly" name="viewcount" type="text" value="-" readonly>
+                    </div>
+                    <div class="field">
+                        <label class="label">마감일</label>
+                        <input class="date" name="closing_date" type="date">
+                        <input type="time" name="closing_time">
+                    </div>
+                    <div class="field">
+                        <label class="label">시작일</label>
+                        <input class="date" name="start_date" type="date">
+                        <input type="time" name="start_time">
+                    </div>
+                    
+                </div>
+
+                <div class="editor">
+                    <label class="label">내용</label>
+                    <textarea class="textarea" name="content" placeholder="내용을 입력하세요."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-ghost" type="button" onclick="goMain();">취소</button>
+                    <button class="btn btn-solid" type="button" onclick="doPost();">작성하기</button>
+                </div>
+            </form>
+        </div>
+
+    </body>
+
+</html>
