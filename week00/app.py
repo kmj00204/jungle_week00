@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from pymongo import MongoClient
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import bcrypt
 import os
 from werkzeug.utils import secure_filename
@@ -9,9 +10,11 @@ from bson import ObjectId
 app = Flask(__name__)
 app.secret_key = "secret_key"
 
-client = MongoClient("mongodb://test:1234@localhost:27017/")
+client = MongoClient('localhost', 27017)
 db = client.simple_board_db
 posts_collection = db.posts
+participants_collection = db.participant
+reply_collection = db.reply
 
 app.config["UPLOAD_FOLDER"] = "./static/uploads"
 
@@ -72,7 +75,41 @@ def login():
 
 @app.route("/mypage", methods=["GET"])
 def mypage():
-    return render_template("mypage.html")
+    # 내가 작성한 글
+    myPosts = list(db.posts.find({"author" : session["user"]}))
+
+    page = int(request.args.get("page", 1))
+    
+    per_page = 10
+
+    total_posts = len(myPosts)
+    total_pages = (total_posts + per_page - 1) // per_page
+
+    # 현재 요청 쿼리 복사 (딕셔너리 형태로)
+    query_params = request.args.to_dict()
+    query_params.pop("page", None)  # 기존 페이지 제거
+
+    # 내가 참석한 글
+    # 참석자 테이블에서 post의 id목록 조회 -> 조회한 post id로 post목록 조회
+    # 1. participant에서 post_id 목록 조회
+    post_ids = participants_collection.find(
+        {"user_id": session["user"]},
+        {"post_id": 1, "_id": 0}
+    )
+    post_ids = [p["post_id"] for p in post_ids]
+
+    # 타입 맞추기: posts._id가 ObjectId라면 문자열을 ObjectId로 변환
+    post_ids = [
+        ObjectId(x) if isinstance(x, str) else x
+        for x in post_ids
+        if x is not None
+    ]
+
+    # 2. posts 테이블에서 해당 post 목록 조회
+    applyPosts = list(db.posts.find({"_id": {"$in": post_ids}}))
+
+    return render_template("mypage.html", myPosts=myPosts,  page=page,
+        total_pages=total_pages, query_params=query_params, applyPosts=applyPosts)
 
 
 @app.route("/join", methods=["GET", "POST"])
@@ -119,7 +156,7 @@ def search():
 
     sort_option = [("created_at", -1)]
     if sort == "closest":
-        sort_option = [("deadline", 1)]
+        sort_option = [("closing_date", 1)]
     elif sort == "viewcount":
         sort_option = [("viewcount", -1)]
 
@@ -169,45 +206,80 @@ def post(id):
     # 업데이트 후 최신 데이터로 다시 조회 (선택사항)
     post["viewcount"] += 1  # 이미 기존 데이터를 가져왔으므로 수동으로 1 증가시켜도 무방
 
-    return render_template("post_detail.html", post=post)
+    # 참여자 목록
+    participants = list(participants_collection.find({"post_id": id}))
+
+    # 댓글 목록
+    replies = list(reply_collection.find({"post_id": id}))
+
+    # 본인 글 여부
+    isMyPost = db.posts.find_one(
+    {"_id": ObjectId(id), "author": session["user"]},
+    {"_id": 1}
+    ) is not None
+
+    # 신청이력
+    alreadyApply = participants_collection.find_one(
+    {"post_id": id, "user_id": session["user"]},
+    {"_id": 1}
+    ) is not None
+
+    return render_template("postDetail.html", post=post, isMyPost=isMyPost , alreadyApply=alreadyApply, participants=participants, replies=replies)
 
 
 @app.route("/post/new", methods=["GET", "POST"])
 def new_post():
     if request.method == "POST":
         title = request.form.get("title")
-        deadline = request.form.get("deadline")
         required = request.form.get("required")
         author = session["user"]
         viewcount = 0
         status = 0
         category = request.form.get("category")
+        content = request.form.get("content")
 
-        picture = request.files.get("picture")
-        picture_url = None
+        closing_date = request.form.get("closing_date")
+        closing_time = request.form.get("closing_time")
+        start_date = request.form.get("start_date")
+        start_time = request.form.get("start_time")
 
-        if picture:
-            filename = secure_filename(picture.filename)
-            picture.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            picture_url = f"/static/uploads/{filename}"  # 정적 경로로 접근 가능하도록
+        # 사진 있는 케이스 구분
+        # picture = request.files.get("picture")
+        # picture_url = None
+
+        # if picture:
+        #     filename = secure_filename(picture.filename)
+        #     picture.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        #     picture_url = f"/static/uploads/{filename}"  # 정적 경로로 접근 가능하도록
+
+        # 시설정보
+        # facility = request.form.get("facility")
+        # facilityDetail = request.form.get("facilityDetail")
+
 
         post = {
             "title": title,
-            "picture": picture_url,
+            # "picture": picture_url,
             "author": author,
             "viewcount": viewcount,
-            "deadline": deadline,
             "required": required,
             "status": status,
             "category": category,
             "statu": 1,
+            "closing_date" : closing_date,
+            "closing_time" : closing_time,
+            "start_date" : start_date,
+            "start_time" : start_time,
+            "content" : content
+            # "facility" : facility,
+            # "facilityDetail" : facilityDetail
         }
         posts_collection.insert_one(post)
         return redirect("/")
-    return render_template("new_post.html")
+    return render_template("createPost.html")
 
 
-@app.route("/post/participate/<id>", methods=["GET"])
+@app.route("/post/participate/<id>", methods=["POST"])
 def participate(id):
     userid = session.get("user")
     if not userid:
@@ -217,15 +289,87 @@ def participate(id):
     if not post:
         return "게시글을 찾을 수 없습니다.", 404
 
-    participants = post.get("participants", [])
+    # 참석한 적 있는지
+    alreadyApply = db.participants.find_one(
+    {"post_id": id, "user_id": userid},
+    {"_id": 1}
+    ) is not None
 
-    if userid in participants:
+    if alreadyApply:
         return redirect(url_for("post", id=id, msg="already"))
     else:
-        posts_collection.update_one(
-            {"_id": ObjectId(id)}, {"$push": {"participants": userid}}
-        )
-        return redirect(url_for("post", id=id, msg="success"))
+        # posts_collection.update_one(
+        #     {"_id": ObjectId(id)}, {"$push": {"participants": userid}}
+        # )
+        participants_collection.insert_one({
+            "user_id" : userid,
+            "post_id" : id,
+            "participated_time" : datetime.now(ZoneInfo("Asia/Seoul"))
+        })
+        return redirect(url_for("mypage"))
+
+@app.route("/post/cancel/<id>", methods=["POST"])
+def cancel_post(id):
+    userid = session.get("user")
+    if not userid:
+        return redirect(url_for("login"))
+
+    post = posts_collection.find_one({"_id": ObjectId(id)})
+    if not post:
+        return "게시글을 찾을 수 없습니다.", 404
+
+    # 참석한 적 있는지
+    alreadyApply = db.participants.find_one(
+    {"post_id": id, "user_id": userid},
+    {"_id": 1}
+    ) is not None
+
+    if not alreadyApply:
+        result = participants_collection.delete_one({
+            "post_id" : id,
+            "user_id" : userid
+        })
+        if result.deleted_count == 1:
+            return redirect(url_for("mypage"))
+        else:
+            return  "신청 중 에러 발생.", 404
+    else:
+        return  jsonify({"result": "fail", "msg": "참여 이력을 찾을 수 없습니다."})
+        
+@app.route("/post/close/<id>", methods=["POST"])
+def close_post(id):
+    result = posts_collection.update_one({"_id": ObjectId(id)}, {"$set": {"statu": 0}})
+    if result.modified_count > 0 :
+        return redirect(url_for("mypage"))
+    else :
+        "마감 중 에러 발생.", 404
+
+
+@app.route("/post/update/<id>", methods=["POST"])
+def update_post(id):
+    result = posts_collection.update_one({"_id": ObjectId(id)}, {"$set": {
+                                                                    "title": request.form.get("title"),
+                                                                    "required" : request.form.get("required"),
+                                                                    "category" : request.form.get("category"),
+                                                                    "content" : request.form.get("content"),
+                                                                    "closing_date" : request.form.get("closing_date"),
+                                                                    "closing_time" : request.form.get("closing_time"),
+                                                                    "start_date" : request.form.get("start_date"),
+                                                                    "start_time" : request.form.get("start_time")
+                                                                }})
+    
+    if result.modified_count > 0 :
+        return redirect(url_for("mypage"))
+    else :
+        "마감 중 에러 발생.", 404
+
+@app.route("/ajax/reply", methods=["POST"])
+def insert_reply():
+    data = request.get_json()
+    reply_collection.insert_one({"post_id": data["postId"], "user_id": data["userId"], "replyContent": data["replyContent"], "created_at": data["created_at"]})
+    
+    return jsonify(ok=True, data=data)
+
 
 
 @app.route("/post/delete", methods=["POST"])
