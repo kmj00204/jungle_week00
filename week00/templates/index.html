@@ -22,14 +22,30 @@
     </nav>
 
     <div class="container">
-        <div style="height: 300px; border: 1px solid black;">
+        <div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">카테고리별 조회수 TOP 3</label><br>
+                {% for cat in ['전체', '시설이용', '러닝/산책', '배달','외출','택시','기타'] %}
+                <input type="radio" class="btn-check" name="rankingCategory" id="radio-{{cat}}" value="{{cat}}"
+                    autocomplete="off" {% if cat=='전체' %}checked{% endif %}>
+                <label class="btn btn-outline-primary me-2 mb-2" for="radio-{{cat}}">{{cat}}</label>
+                {% endfor %}
+            </div>
+
+            <div id="ranking-result" class="row">
+                <div class="col-12">
+                    <p class="text-muted">카테고리를 선택해주세요.</p>
+                </div>
+            </div>
         </div>
+
+
         <hr>
         <form method="GET" action="/search" class="row g-3 align-items-end mb-4">
             <div class="col-md-3" style="width:150px;">
                 <label for="category" class="form-label">카테고리</label>
                 <select class="form-select" name="category" id="category">
-                    {% for cat in ['전체', '배달', '택시', '기타','운동'] %}
+                    {% for cat in ['전체', '시설이용', '러닝/산책', '배달','외출','택시','기타'] %}
                     <option value="{{ cat }}" {% if selected_category==cat %}selected{% endif %}>{{ cat }}</option>
                     {% endfor %}
                 </select>
@@ -62,13 +78,13 @@
                     제목
                 </td>
                 <td>
-                    사진
-                </td>
-                <td>
                     작성자
                 </td>
                 <td>
                     조회수
+                </td>
+                <td>
+                    작성일
                 </td>
                 <td>
                     마감일
@@ -91,19 +107,28 @@
                     </a>
                 </td>
                 <td>
-                    <img src="{{ post.picture }}" alt="게시글 이미지" style="max-width: 150px; max-height: 100px;">
-                </td>
-                <td>
                     {{post.author}}
                 </td>
                 <td>
                     {{post.viewcount}}
                 </td>
                 <td>
-                    {{ post.deadline[:10] }} {{ post.deadline[11:] }}
+                    {% if post.created_at %}
+                    {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                    -
+                    {% endif %}
                 </td>
                 <td>
-                    {{post.status}} / {{post.required}}
+                    {{ post.closing_date[:10] }} {{ post.closing_date[11:] }}
+                </td>
+                <td>
+                    {% if post.participants %}
+                    {{ post.participants|length }} / {{ post.required }}
+                    {% else %}
+                    0 / {{ post.required }}
+                    {% endif %}
+
                 </td>
                 <td>
                     {% if post.statu == 1 %}
@@ -151,6 +176,61 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function loadRanking(category) {
+            fetch(`/api/ranking?category=${encodeURIComponent(category)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('ranking-result');
+                    resultDiv.innerHTML = ''; // 기존 내용 제거
+
+                    if (data.length === 0) {
+                        resultDiv.innerHTML = `<div class="col-12"><p class="text-muted">해당 카테고리에 게시글이 없습니다.</p></div>`;
+                        return;
+                    }
+
+                    data.forEach(post => {
+                        const cardHTML = `
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="/post/${post._id}" class="text-decoration-none">${post.title}</a>
+                                    </h5>
+                                    <p class="card-text mb-1"><strong>작성자:</strong> ${post.author}</p>
+                                    <p class="card-text mb-1"><strong>조회수:</strong> ${post.viewcount}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                        resultDiv.insertAdjacentHTML('beforeend', cardHTML);
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('ranking-result').innerHTML =
+                        `<div class="col-12"><p class="text-danger">데이터를 불러오는 중 오류가 발생했습니다.</p></div>`;
+                    console.error('Error:', error);
+                });
+        }
+
+        // 라디오 버튼 클릭 시
+        document.querySelectorAll('input[name="rankingCategory"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                loadRanking(this.value);
+            });
+        });
+
+        // ✅ 페이지 로드 시 기본 '전체' 자동 조회
+        document.addEventListener('DOMContentLoaded', function () {
+            // 기본 "전체" 카테고리가 자동 선택된 상태로 로드
+            const defaultCategory = '전체';
+            loadRanking(defaultCategory);
+        });
+    </script>
+
+
+
 </body>
 
 </html>
