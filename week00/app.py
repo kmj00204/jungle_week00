@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, render_template_string
 from pymongo import MongoClient, ReturnDocument
 import datetime
 from zoneinfo import ZoneInfo
@@ -8,12 +8,19 @@ from werkzeug.utils import secure_filename
 from bson import ObjectId
 import math
 import json
+#
+from dotenv import load_dotenv
+from email.message import EmailMessage
+import smtplib, uuid
+from  datetime import timezone
+#
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
 
-client = MongoClient("localhost", 27017)
-# client = MongoClient("mongodb://test:1234@localhost:27017/")
+# client = MongoClient("localhost", 27017)
+client = MongoClient("mongodb://test:1234@localhost:27017/")
 
 db = client.simple_board_db
 posts_collection = db.posts
@@ -22,6 +29,175 @@ reply_collection = db.reply
 
 app.config["UPLOAD_FOLDER"] = "./static/uploads"
 
+# ---------------------------
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "hdh853@gmail.com"
+SMTP_PASS = ""
+
+EMAIL_CLOSED_HTML = """
+<!doctype html>
+<html lang="ko">
+  <body style="font-family:system-ui,-apple-system,Segoe UI,Roboto; line-height:1.6;">
+    <p>안녕하세요,</p>
+    <p><strong>{{ title }}</strong> 모임이 <b>마감</b>되었습니다.</p>
+    {% if closing_date %}
+    <p>마감일: {{ closing_date }}</p>
+    {% endif %}
+    <p>참여해 주셔서 감사합니다!</p>
+  </body>
+</html>
+"""
+
+def send_email(*, to, subject, text=None, html=None, bcc=None, reply_to=None):
+
+    """단건 전송 유틸"""
+    to_header = ", ".join(to) if isinstance(to, list) else (to or SMTP_USER)
+
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"]    = SMTP_USER
+    msg["To"]      = to_header
+    if reply_to:
+        msg["Reply-To"] = reply_to
+
+    if html:
+        msg.set_content(text or "")
+        msg.add_alternative(html, subtype="html")
+    else:
+        msg.set_content(text or "")
+
+    if bcc:
+        msg["Bcc"] = ", ".join(bcc) if isinstance(bcc, list) else bcc
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as s:
+        s.ehlo() 
+        s.starttls() 
+        s.ehlo()
+        s.login(SMTP_USER, SMTP_PASS)
+        s.send_message(msg)
+
+def send_bulk_individually(recipients, subject, text=None, html=None):
+    
+    """수신자 노출 방지/실패 분리 위해 1명씩 개별 발송"""
+    ok, fail, errors = 0, 0, []
+    for r in recipients:
+        try:
+            send_email(to=r, subject=subject, text=text, html=html)
+            ok += 1
+        except Exception as e:
+            fail += 1
+            errors.append({"recipient": r, "error": str(e)})
+    return {"ok": ok, "fail": fail, "errors": errors}
+
+def collect_participant_emails(oid):
+    """
+    수신자 수집 규칙:
+    1) participants.email 이 우선
+    2) 없으면 participants.user_id → users.email 조인
+    """
+    emails = []
+
+    p_docs = list(participants_collection.find({"post_id": str(oid)}, {"_id": 0, "user_id": 1}))
+
+    user_ids = [p.get("user_id") for p in p_docs if p.get("user_id")]
+
+
+    if user_ids:
+        u_docs = list(db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "email": 1}))
+        emails = [u["email"] for u in u_docs if u.get("email")]
+
+    # 중복/빈값 제거
+    emails = sorted({e.strip() for e in emails if e and isinstance(e, str)})
+    return emails
+
+def render_close_email(post, closing_date_str):
+    """제목/본문/HTML 생성 (closing_date 사용)"""
+    title   = post.get("title", "모집글")
+    subject = f"[공지] '{title}' 마감 안내"
+    text    = f"""안녕하세요,
+'{title}' 모임이 마감되었습니다.
+마감일: {closing_date_str}
+참여해 주셔서 감사합니다."""
+    html    = render_template_string(EMAIL_CLOSED_HTML, title=title, closing_date=closing_date_str)
+    return subject, text, html
+
+def send_post_closing_notifications(
+    post_id: str,
+    *,
+    notify: bool = True,
+    dry_run: bool = False,
+    require_closed: bool = True,  # True면 status가 'closed'일 때만 발송
+):
+    """
+    ✅ 역할: 주어진 post_id로 참여자 이메일을 조회하여 '마감 안내' 메일만 발송
+    - 이 함수는 '상태 변경'을 절대 하지 않음 (마감 처리는 외부에서 이미 완료했다고 가정)
+    - require_closed=True면 게시글 status가 'closed'가 아니면 발송하지 않음
+    - dry_run=True면 실제 발송 없이 대상/미리보기만 반환
+    """
+
+    now = datetime.datetime.now(timezone.utc)
+
+    # 1) post 조회 (존재/상태 점검)
+    try:
+        oid = ObjectId(post_id)
+    except Exception:
+        return {"ok": False, "msg": "유효하지 않은 ObjectId"}
+
+    post = db.posts.find_one({"_id": oid})
+    if not post:
+        return {"ok": False, "msg": "게시글이 존재하지 않습니다."}
+
+    # if require_closed and post.get("status") != "closed":
+    #     return {"ok": False, "msg": "게시글이 'closed' 상태가 아니어서 발송하지 않습니다.", "status": post.get("status")}
+
+    # 2) 수신자 이메일 수집
+    
+    emails = collect_participant_emails(oid)  # 기존 헬퍼 재사용
+
+    # 3) 메일 콘텐츠 준비 (closing_date 표준화)
+    closing_dt = post.get("closing_date") or post.get("closing_time") or now
+    if isinstance(closing_dt, datetime.datetime):
+        closing_date_str = closing_dt.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        # 문자열/기타 타입 대비
+        closing_date_str = str(closing_dt)
+
+    subject, text, html = render_close_email(post, closing_date_str)
+
+    # 4) dry-run: 실제 발송 없이 프리뷰만
+    if dry_run:
+        return {
+            "ok": True,
+            "dry_run": True,
+            "emails": emails,
+            "subject": subject,
+            "html_preview": html[:4000],
+        }
+
+    # 5) 실제 발송
+    sent_summary = None
+    if notify and emails:
+        sent_summary = send_bulk_individually(emails, subject, text=text, html=html)
+
+    # 6) 발송 로그 (상태 변경 없음)
+    db.mail_logs.insert_one({
+        "post_id": oid,
+        "subject": subject,
+        "emails": emails,
+        "result": sent_summary,
+        "notified": bool(notify and emails),
+        "created_at": now
+    })
+
+    return {
+        "ok": True,
+        "emails": len(emails),
+        "sent": sent_summary
+    }
+
+
+# ----------------------------
 
 @app.route("/")
 def index():
@@ -191,6 +367,7 @@ def join():
     username = request.form.get("username")
     pw = request.form.get("pw")
     pw1 = request.form.get("pw1")
+    email = request.form.get("email")
 
     if pw != pw1:
         return render_template("join.html", error="비밀번호가 일치하지 않습니다.")
@@ -198,7 +375,7 @@ def join():
         return render_template("join.html", error="이미 존재하는 ID입니다.")
 
     hashed_pw = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
-    db.users.insert_one({"id": id, "username": username, "pw": hashed_pw})
+    db.users.insert_one({"id": id, "username": username, "pw": hashed_pw, "email" : email})
 
     return redirect("/")
 
@@ -319,7 +496,6 @@ def post(id):
 @app.route("/post/new", methods=["GET", "POST"])
 def new_post():
     if request.method == "POST":
-        print(request.form)
         title = request.form.get("title")
         author = request.form.get("author")
         required = request.form.get("required")
@@ -548,9 +724,10 @@ def cancel_post(id):
 def close_post(id):
     result = posts_collection.update_one({"_id": ObjectId(id)}, {"$set": {"statu": 0}})
     if result.modified_count > 0:
+        send_post_closing_notifications(id, notify=True, dry_run=False, require_closed=True)       
         return redirect(url_for("mypage"))
     else:
-        "마감 중 에러 발생.", 404
+        return redirect(url_for("post", id=id, msg="마감 실패"))
 
 
 @app.route("/post/update/<id>", methods=["POST"])
@@ -569,13 +746,14 @@ def update_post(id):
                 "start_time": request.form.get("start_time"),
                 "rect": request.form.get("rect"),
             }
-        },
+        }
     )
 
     if result.modified_count > 0:
         return redirect(url_for("mypage"))
     else:
-        "마감 중 에러 발생.", 404
+        return redirect(url_for("post", id=id, msg="수정 실패"))
+
 
 
 @app.route("/ajax/reply", methods=["POST"])
