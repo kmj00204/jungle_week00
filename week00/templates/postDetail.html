@@ -313,8 +313,13 @@
             padding: 6px 10px;
         }
 
-        .btnList { display: none !important; }
-        .btnList.show { display: flex !important; }
+        .btnList {
+            display: none !important;
+        }
+
+        .btnList.show {
+            display: flex !important;
+        }
 
         /* 유효성 검사 css */
         .is-invalid {
@@ -332,6 +337,7 @@
     <script>
         $(document).ready(function () {
             let msg = "{{ msg }}";
+            console.log("msg : " + msg);
             if (msg != 'None' && msg != 'undefiened' != msg != null) {
                 alert(msg);
             }
@@ -388,6 +394,7 @@
                 });
             }
 
+
             // 수정 권한 있을 경우
             if ("{{isMyPost}}" != 'False') {
                 $('.btnList').addClass('show');
@@ -420,6 +427,7 @@
 
                 // 드로잉
                 $overlay.on('mousedown', function (e) {
+                    console.log("mouse down");
                     if (mode !== 'draw') return;
                     drawing = true;
                     start = relPos(e);
@@ -440,6 +448,7 @@
                 });
 
                 $(document).on('mouseup', function () {
+                    console.log("mouse up");
                     if (!drawing || !$current) return;
                     drawing = false;
 
@@ -455,14 +464,17 @@
 
                 // 선택/해제
                 $overlay.on('click', '.rect', function (e) {
+                    console.log("rect Clicked!! 선택 ");
                     if (mode === 'draw') return;
                     e.stopPropagation();
                     const $r = $(this), id = $r.data('id');
+                    console.log("id : " + id);
 
                     if (selectedId === id) { clearSelection(); return; }
                     clearSelection(); selectedId = id; $r.addClass('selected'); mode = 'select';
                 });
                 $overlay.on('click', function (e) {
+                    console.log("rect Clicked!! 해제");
                     if ($(e.target).hasClass('rect')) return;
                     clearSelection(); if (mode === 'select') mode = 'idle';
                 });
@@ -473,6 +485,8 @@
                 $('#btnDelete').on('click', function () {
                     if (!selectedId) return;
                     $overlay.find(`.rect`).each(function () {
+                        console.log("this.id : " + $(this).data('id'));
+                        console.log("selected id : " + selectedId);
                         if ($(this).data('id') === selectedId) $(this).remove();
                     });
                     rects = rects.filter(r => r.id !== selectedId); clearSelection(); mode = 'idle';
@@ -758,10 +772,11 @@
             // 맵 1 (러닝/산책)
             if (runningMapElement) {
                 const runningPointsRaw = runningMapElement.textContent.trim();
+
                 if (runningPointsRaw) {
                     try {
                         const runningPoints = JSON.parse(runningPointsRaw);
-
+                        console.log(runningPoints)
                         const map = L.map('map').setView([runningPoints[0].lat, runningPoints[0].lng], 13);
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -922,8 +937,8 @@
                     <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
                     <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
                     <button id="btnClear" class="btn btn-primary">전체 삭제</button>
+                    <!-- <button id="btnSave" class="btn btn-primary">저장</button> -->
                 </div>
-
                 <div class="toolbar">
                     <select class="select" id="facility" style="width: 100%;" disabled>
                         <option value="0">시설물 선택</option>
@@ -1002,12 +1017,12 @@
                 </div>
                 {%endif%}
             </div>
-
             <div>
                 {%if post.taxi_fee%}
                 <div class="field">
                     <label class="label">택시 목적지</label>
-                    <span id="taxi_destination_text" style="display: none;">{{post.taxi_dest}}</span>
+                    <span id="taxi_destination_text" name="taxi_dest_text"
+                        style="display: none;">{{post.taxi_dest}}</span>
                     <div id="map2" style="height: 300px; margin-top: 10px;"></div>
                 </div>
                 <div class="field-container">
