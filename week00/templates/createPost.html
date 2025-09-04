@@ -389,7 +389,7 @@
     </style>
     <script>
         var rects = [];
-        // 카테고리 selectBox 선택시 화면 유형 전환        
+        // 카테고리 selectBox 선택시 화면 유형 전환
 
         $(function () {
             $(".category").hide();
@@ -460,7 +460,7 @@
 
             /* 시설이용 - 이미지에 도형 그리기 */
             const $overlay = $('#overlay');
-            let mode = 'idle';              // 'idle' | 'draw' | 'select'
+            let mode = 'idle'; 			// 'idle' | 'draw' | 'select'
             let drawing = false, start = { x: 0, y: 0 };
             let $current = null, selectedId = null, autoId = 0;
 
@@ -534,7 +534,7 @@
             function clearSelection() { selectedId = null; $overlay.find('.rect').removeClass('selected'); }
             function cancelCurrentDrawing() { drawing = false; if ($current) { $current.remove(); $current = null; } }
 
-            // 삭제/초기화
+            // 삭제/초기화/저장
             $('#btnDelete').on('click', function () {
                 if (!selectedId) return;
                 $overlay.find(`.rect`).each(function () { if ($(this).data('id') === selectedId) $(this).remove(); });
@@ -637,6 +637,23 @@
                 } else clearError($facility);
             }
 
+            // 러닝/산책 카테고리일 때 5개의 지점 선택 여부 검사
+            if (categoryVal === '러닝/산책') {
+                if (clickPoints.length < 5) {
+                    ok = false;
+                    alert('러닝/산책 경로를 위해 지도를 5번 클릭하여 5개의 지점을 지정해주세요.');
+                }
+            }
+
+            // 외출 카테고리일 때 목적지 선택 여부 검사
+            if (categoryVal === '외출') {
+                if (!window.outingDestinationLatLng) {
+                    ok = false;
+                    alert('외출 목적지를 지도를 클릭하여 지정해주세요.');
+                }
+            }
+
+
             if (!ok) {
                 const el = $firstInvalid[0];
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -650,67 +667,86 @@
             const form = document.getElementById("info");
             const categoryVal = $("#categorySelect").val();
 
-            const facilityVal = $("#facility").val();
-            const facilityDetailVal = $("#facilityDetail").val();
-
             // 유효성 검사 method
             if (!checkValid(categoryVal)) {
                 return false;
             };
 
-            const hidden = document.createElement("input");
-            hidden.type = "hidden";
-            hidden.name = "category";
-            hidden.value = categoryVal;
-            form.appendChild(hidden);
+            // 모든 폼 데이터에 대한 유효성 검사 성공 후 히든 필드 추가
+            const categoryHidden = document.createElement("input");
+            categoryHidden.type = "hidden";
+            categoryHidden.name = "category";
+            categoryHidden.value = categoryVal;
+            form.appendChild(categoryHidden);
 
-            const facility = document.createElement("input");
-            facility.type = "hidden";
-            facility.name = "facility";
-            facility.value = facilityVal;
-            form.appendChild(facility);
+            if (categoryVal == '시설이용') {
+                const facilityVal = $("#facility").val();
+                const facilityHidden = document.createElement("input");
+                facilityHidden.type = "hidden";
+                facilityHidden.name = "facility";
+                facilityHidden.value = facilityVal;
+                form.appendChild(facilityHidden);
 
-            const facilityDetail = document.createElement("input");
-            facilityDetail.type = "hidden";
-            facilityDetail.name = "facilityDetail";
-            facilityDetail.value = facilityDetailVal;
-            form.appendChild(facilityDetail);
-
-
-            if (categoryVal == '시설이용') {     // 시설이용 : 공간 좌표, 카테고리, 카테고리 상세
-                const facility = $("#facility").val();
-
-                const hidden = document.createElement("input");
-                hidden.type = "hidden";
-                hidden.name = "facility";
-                hidden.value = facility;
-                form.appendChild(hidden);
+                const facilityDetailVal = $("#facilityDetail").val();
+                if (facilityVal == '교육장' || facilityVal == '회의실') {
+                    const facilityDetailHidden = document.createElement("input");
+                    facilityDetailHidden.type = "hidden";
+                    facilityDetailHidden.name = "facilityDetail";
+                    facilityDetailHidden.value = facilityDetailVal;
+                    form.appendChild(facilityDetailHidden);
+                }
 
                 // 이미지 도형 좌표값
-                const rect = document.createElement("input");
-                hidden.type = "hidden";
-                hidden.name = "rect";
-
+                const rectsHidden = document.createElement("input");
+                rectsHidden.type = "hidden";
+                rectsHidden.name = "rects";
                 const $overlay = $('#overlay');
                 const W = $overlay.width(), H = $overlay.height();
                 const normalized = rects.map(r => ({ id: r.id, x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H }));
-                hidden.value = JSON.stringify(normalized);
-                form.appendChild(hidden);
+                rectsHidden.value = JSON.stringify(normalized);
+                form.appendChild(rectsHidden);
+            } else if (categoryVal == '택시') {
+                const destinationValue = document.querySelector('input[name="destination"]').value;
+                const fareValue = document.getElementById('fareField').querySelector('input[name="fare"]').value;
 
-                if (facility == '교육장' || facility == '회의실') {
-                    const hidden = document.createElement("input");
-                    hidden.type = "hidden";
-                    hidden.name = "facilityDetail";
-                    hidden.value = facilityDetail;
-                    form.appendChild(hidden);
-                }
+                // 목적지 주소
+                const destinationHidden = document.createElement("input");
+                destinationHidden.type = "hidden";
+                destinationHidden.name = "taxi_destination";
+                destinationHidden.value = destinationValue;
+                form.appendChild(destinationHidden);
+
+                // 예상 택시비
+                const fareHidden = document.createElement("input");
+                fareHidden.type = "hidden";
+                fareHidden.name = "fare";
+                fareHidden.value = fareValue;
+                form.appendChild(fareHidden);
+
+            } else if (categoryVal == '러닝/산책') {
+                // 러닝/산책 카테고리일 경우 5개 지점 전송
+                const runningPointsHidden = document.createElement("input");
+                runningPointsHidden.type = "hidden";
+                runningPointsHidden.name = "runningPoints";
+                const pointsData = clickPoints.map(point => ({ lat: point.lat, lng: point.lng }));
+                runningPointsHidden.value = JSON.stringify(pointsData);
+                form.appendChild(runningPointsHidden);
+            } else if (categoryVal == '외출') {
+                // 외출 카테고리일 경우 위경도 전송
+                const outingDestHidden = document.createElement("input");
+                outingDestHidden.type = "hidden";
+                outingDestHidden.name = "dest";
+                const destData = { lat: window.outingDestinationLatLng.lat, lng: window.outingDestinationLatLng.lng };
+                outingDestHidden.value = JSON.stringify(destData);
+                form.appendChild(outingDestHidden);
             }
+
             form.submit();
         }
+
         function goMain() {
             location.href = '/';
         }
-
     </script>
 
 
@@ -744,7 +780,6 @@
         </div>
 
         <div class="category" id="1">
-            <!-- 좌측 : 그림 -->
             <div class="container">
                 <div id="wrap" style="position:relative; display:inline-block; max-width: 50%;">
                     <img id="mapImg" src="{{ url_for('static', filename='campus_map.png') }}" draggable="false"
@@ -752,7 +787,6 @@
                     <div id="overlay" style="position:absolute; left:0; top:0; z-index: 5; pointer-events:auto;"></div>
                 </div>
 
-                <!-- 우측: 버튼목록 -->
                 <div class="toolbar">
                     <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
                     <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
@@ -793,7 +827,6 @@
             <div id="outingMap" style="height:450px;"></div>
         </div>
 
-        <!-- 폼 -->
         <form class="form" id="info" action="/post/new" method="post">
             <div class="form-grid">
                 <div class="field">
