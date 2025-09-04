@@ -462,7 +462,7 @@
             const $overlay = $('#overlay');
             let mode = 'idle';              // 'idle' | 'draw' | 'select'
             let drawing = false, start = { x: 0, y: 0 };
-            let $current = null, rects = [], selectedId = null, autoId = 0;
+            let $current = null, selectedId = null, autoId = 0;
 
             function setMode(next) {
                 mode = next;
@@ -534,7 +534,7 @@
             function clearSelection() { selectedId = null; $overlay.find('.rect').removeClass('selected'); }
             function cancelCurrentDrawing() { drawing = false; if ($current) { $current.remove(); $current = null; } }
 
-            // 삭제/초기화/저장
+            // 삭제/초기화
             $('#btnDelete').on('click', function () {
                 if (!selectedId) return;
                 $overlay.find(`.rect`).each(function () { if ($(this).data('id') === selectedId) $(this).remove(); });
@@ -695,7 +695,7 @@
                 const W = $overlay.width(), H = $overlay.height();
                 const normalized = rects.map(r => ({ id: r.id, x: r.x / W, y: r.y / H, w: r.w / W, h: r.h / H }));
                 hidden.value = JSON.stringify(normalized);
-                form.appendChild(rect);
+                form.appendChild(hidden);
 
                 if (facility == '교육장' || facility == '회의실') {
                     const hidden = document.createElement("input");
