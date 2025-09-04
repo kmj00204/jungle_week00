@@ -313,6 +313,9 @@
             padding: 6px 10px;
         }
 
+        .btnList { display: none !important; }
+        .btnList.show { display: flex !important; }
+
         /* 유효성 검사 css */
         .is-invalid {
             border-color: #ef4444 !important;
@@ -329,7 +332,6 @@
     <script>
         $(document).ready(function () {
             let msg = "{{ msg }}";
-            console.log("msg : " + msg);
             if (msg != 'None' && msg != 'undefiened' != msg != null) {
                 alert(msg);
             }
@@ -386,10 +388,9 @@
                 });
             }
 
-
             // 수정 권한 있을 경우
-            if ("{{isMyPost}}") {
-                $('.btnList').show();
+            if ("{{isMyPost}}" != 'False') {
+                $('.btnList').addClass('show');
 
                 const $overlay = $('#overlay');
                 let mode = 'idle';              // 'idle' | 'draw' | 'select'
@@ -419,7 +420,6 @@
 
                 // 드로잉
                 $overlay.on('mousedown', function (e) {
-                    console.log("mouse down");
                     if (mode !== 'draw') return;
                     drawing = true;
                     start = relPos(e);
@@ -440,7 +440,6 @@
                 });
 
                 $(document).on('mouseup', function () {
-                    console.log("mouse up");
                     if (!drawing || !$current) return;
                     drawing = false;
 
@@ -456,17 +455,14 @@
 
                 // 선택/해제
                 $overlay.on('click', '.rect', function (e) {
-                    console.log("rect Clicked!! 선택 ");
                     if (mode === 'draw') return;
                     e.stopPropagation();
                     const $r = $(this), id = $r.data('id');
-                    console.log("id : " + id);
 
                     if (selectedId === id) { clearSelection(); return; }
                     clearSelection(); selectedId = id; $r.addClass('selected'); mode = 'select';
                 });
                 $overlay.on('click', function (e) {
-                    console.log("rect Clicked!! 해제");
                     if ($(e.target).hasClass('rect')) return;
                     clearSelection(); if (mode === 'select') mode = 'idle';
                 });
@@ -477,8 +473,6 @@
                 $('#btnDelete').on('click', function () {
                     if (!selectedId) return;
                     $overlay.find(`.rect`).each(function () {
-                        console.log("this.id : " + $(this).data('id'));
-                        console.log("selected id : " + selectedId);
                         if ($(this).data('id') === selectedId) $(this).remove();
                     });
                     rects = rects.filter(r => r.id !== selectedId); clearSelection(); mode = 'idle';
@@ -928,8 +922,8 @@
                     <button id="btnDraw" class="btn btn-primary">영역(사각형) 표시</button>
                     <button id="btnDelete" class="btn btn-primary">선택 삭제</button>
                     <button id="btnClear" class="btn btn-primary">전체 삭제</button>
-                    <!-- <button id="btnSave" class="btn btn-primary">저장</button> -->
                 </div>
+
                 <div class="toolbar">
                     <select class="select" id="facility" style="width: 100%;" disabled>
                         <option value="0">시설물 선택</option>
