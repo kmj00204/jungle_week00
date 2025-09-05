@@ -44,7 +44,7 @@ app.config["UPLOAD_FOLDER"] = "./static/uploads"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USER = "hdh853@gmail.com"
-SMTP_PASS = "wqhx fybd xapg tgfw"
+
 
 EMAIL_CLOSED_HTML = """
 <!doctype html>
@@ -805,3 +805,4 @@ def delete_post():
 
 if __name__ == "__main__":
     app.run("0.0.0.0", port=5000, debug=True)
+
