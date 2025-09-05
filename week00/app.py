@@ -1,4 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, render_template_string
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    jsonify,
+    session,
+    render_template_string,
+)
 from pymongo import MongoClient, ReturnDocument
 import datetime
 from zoneinfo import ZoneInfo
@@ -8,11 +17,13 @@ from werkzeug.utils import secure_filename
 from bson import ObjectId
 import math
 import json
+
 #
 from dotenv import load_dotenv
 from email.message import EmailMessage
 import smtplib, uuid
-from  datetime import timezone
+from datetime import timezone
+
 #
 load_dotenv()
 
@@ -33,7 +44,7 @@ app.config["UPLOAD_FOLDER"] = "./static/uploads"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
 SMTP_USER = "hdh853@gmail.com"
-SMTP_PASS = ""
+SMTP_PASS = "wqhx fybd xapg tgfw"
 
 EMAIL_CLOSED_HTML = """
 <!doctype html>
@@ -49,15 +60,15 @@ EMAIL_CLOSED_HTML = """
 </html>
 """
 
-def send_email(*, to, subject, text=None, html=None, bcc=None, reply_to=None):
 
+def send_email(*, to, subject, text=None, html=None, bcc=None, reply_to=None):
     """단건 전송 유틸"""
     to_header = ", ".join(to) if isinstance(to, list) else (to or SMTP_USER)
 
     msg = EmailMessage()
     msg["Subject"] = subject
-    msg["From"]    = SMTP_USER
-    msg["To"]      = to_header
+    msg["From"] = SMTP_USER
+    msg["To"] = to_header
     if reply_to:
         msg["Reply-To"] = reply_to
 
@@ -71,14 +82,14 @@ def send_email(*, to, subject, text=None, html=None, bcc=None, reply_to=None):
         msg["Bcc"] = ", ".join(bcc) if isinstance(bcc, list) else bcc
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as s:
-        s.ehlo() 
-        s.starttls() 
+        s.ehlo()
+        s.starttls()
         s.ehlo()
         s.login(SMTP_USER, SMTP_PASS)
         s.send_message(msg)
 
+
 def send_bulk_individually(recipients, subject, text=None, html=None):
-    
     """수신자 노출 방지/실패 분리 위해 1명씩 개별 발송"""
     ok, fail, errors = 0, 0, []
     for r in recipients:
@@ -90,6 +101,7 @@ def send_bulk_individually(recipients, subject, text=None, html=None):
             errors.append({"recipient": r, "error": str(e)})
     return {"ok": ok, "fail": fail, "errors": errors}
 
+
 def collect_participant_emails(oid):
     """
     수신자 수집 규칙:
@@ -98,10 +110,11 @@ def collect_participant_emails(oid):
     """
     emails = []
 
-    p_docs = list(participants_collection.find({"post_id": str(oid)}, {"_id": 0, "user_id": 1}))
+    p_docs = list(
+        participants_collection.find({"post_id": str(oid)}, {"_id": 0, "user_id": 1})
+    )
 
     user_ids = [p.get("user_id") for p in p_docs if p.get("user_id")]
-
 
     if user_ids:
         u_docs = list(db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "email": 1}))
@@ -111,16 +124,20 @@ def collect_participant_emails(oid):
     emails = sorted({e.strip() for e in emails if e and isinstance(e, str)})
     return emails
 
+
 def render_close_email(post, closing_date_str):
     """제목/본문/HTML 생성 (closing_date 사용)"""
-    title   = post.get("title", "모집글")
+    title = post.get("title", "모집글")
     subject = f"[공지] '{title}' 마감 안내"
-    text    = f"""안녕하세요,
+    text = f"""안녕하세요,
 '{title}' 모임이 마감되었습니다.
 마감일: {closing_date_str}
 참여해 주셔서 감사합니다."""
-    html    = render_template_string(EMAIL_CLOSED_HTML, title=title, closing_date=closing_date_str)
+    html = render_template_string(
+        EMAIL_CLOSED_HTML, title=title, closing_date=closing_date_str
+    )
     return subject, text, html
+
 
 def send_post_closing_notifications(
     post_id: str,
@@ -152,7 +169,7 @@ def send_post_closing_notifications(
     #     return {"ok": False, "msg": "게시글이 'closed' 상태가 아니어서 발송하지 않습니다.", "status": post.get("status")}
 
     # 2) 수신자 이메일 수집
-    
+
     emails = collect_participant_emails(oid)  # 기존 헬퍼 재사용
 
     # 3) 메일 콘텐츠 준비 (closing_date 표준화)
@@ -181,23 +198,22 @@ def send_post_closing_notifications(
         sent_summary = send_bulk_individually(emails, subject, text=text, html=html)
 
     # 6) 발송 로그 (상태 변경 없음)
-    db.mail_logs.insert_one({
-        "post_id": oid,
-        "subject": subject,
-        "emails": emails,
-        "result": sent_summary,
-        "notified": bool(notify and emails),
-        "created_at": now
-    })
+    db.mail_logs.insert_one(
+        {
+            "post_id": oid,
+            "subject": subject,
+            "emails": emails,
+            "result": sent_summary,
+            "notified": bool(notify and emails),
+            "created_at": now,
+        }
+    )
 
-    return {
-        "ok": True,
-        "emails": len(emails),
-        "sent": sent_summary
-    }
+    return {"ok": True, "emails": len(emails), "sent": sent_summary}
 
 
 # ----------------------------
+
 
 @app.route("/")
 def index():
@@ -375,7 +391,9 @@ def join():
         return render_template("join.html", error="이미 존재하는 ID입니다.")
 
     hashed_pw = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
-    db.users.insert_one({"id": id, "username": username, "pw": hashed_pw, "email" : email})
+    db.users.insert_one(
+        {"id": id, "username": username, "pw": hashed_pw, "email": email}
+    )
 
     return redirect("/")
 
@@ -478,8 +496,9 @@ def post(id):
     if post.get("category") == "시설이용":
         doc = posts_collection.find_one({"_id": ObjectId(id)}, {"rect": 1, "_id": 0})
         rect_value = (doc or {}).get("rect", "[]")
-        shapes = json.loads(rect_value)  # ← 중요
-        shapes_json = json.dumps(shapes)  # 문자열로 변환
+        if rect_value:
+            shapes = json.loads(rect_value)  # ← 중요
+            shapes_json = json.dumps(shapes)  # 문자열로 변환
 
     return render_template(
         "postDetail.html",
@@ -534,7 +553,7 @@ def new_post():
         # 시설정보
         # facility = request.form.get("facility")
         # facilityDetail = request.form.get("facilityDetail")
-        rect = request.form.get("rect")
+        rect = request.form.get("rects")
 
         # elif(category == "기타"):
         picture = request.files.get("picture")
@@ -724,7 +743,9 @@ def cancel_post(id):
 def close_post(id):
     result = posts_collection.update_one({"_id": ObjectId(id)}, {"$set": {"statu": 0}})
     if result.modified_count > 0:
-        send_post_closing_notifications(id, notify=True, dry_run=False, require_closed=True)       
+        send_post_closing_notifications(
+            id, notify=True, dry_run=False, require_closed=True
+        )
         return redirect(url_for("mypage"))
     else:
         return redirect(url_for("post", id=id, msg="마감 실패"))
@@ -746,14 +767,13 @@ def update_post(id):
                 "start_time": request.form.get("start_time"),
                 "rect": request.form.get("rect"),
             }
-        }
+        },
     )
 
     if result.modified_count > 0:
         return redirect(url_for("mypage"))
     else:
         return redirect(url_for("post", id=id, msg="수정 실패"))
-
 
 
 @app.route("/ajax/reply", methods=["POST"])
